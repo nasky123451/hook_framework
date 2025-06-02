@@ -1,0 +1,22 @@
+[
+	{
+		"name": "UpdateEmailPlugin",
+		"type": "UpdateEmailPlugin"
+	},
+	{
+		"name": "UpdateUsernamePlugin",
+		"type": "UpdateUsernamePlugin"
+	},
+	{
+		"name": "NotificationPlugin",
+		"type": "NotificationPlugin"
+	},
+	{
+		"name": "TwoFactorPlugin",
+		"type": "TwoFactorPlugin"
+	},
+	{
+		"name": "DeleteProtectionPlugin",
+		"type": "DeleteProtectionPlugin"
+	}
+]
