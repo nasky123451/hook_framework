@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"hook_framework/internal/hooks"
-	"log"
 	"strings"
 )
 
@@ -46,7 +45,6 @@ func RegisterAllHandlers(registerFunc func(name string, handler func(ctx interfa
 			panic(fmt.Sprintf("[RegisterAllHandlers] Operation name is empty for handler: %+v", op))
 		}
 		registerFunc(op.Name, op.Handler)
-		log.Printf("[RegisterAllHandlers] Handler registered for operation: %s", op.Name)
 	}
 }
 

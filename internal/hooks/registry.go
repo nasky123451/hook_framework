@@ -31,8 +31,6 @@ func RegisterHook(
 		panic(fmt.Sprintf("Hook name '%s' is not registered or invalid.", name))
 	}
 
-	log.Printf("[RegisterHook] Registering hook '%s' (normalized: '%s').", name, normalizedName)
-
 	hookManager.AddHook(normalizedName, &dynamicHookHandler{
 		name:     normalizedName,
 		priority: priority,
@@ -40,8 +38,6 @@ func RegisterHook(
 		run:      run,
 	})
 
-	// Debug: 列出目前已註冊的 hooks
-	log.Printf("[RegisterHook] Current registered hooks: %+v", hookManager.GetRegisteredHooks())
 }
 
 // dynamicHookHandler 是一個動態實現的 HookHandler，封裝了執行優先級與邏輯

@@ -2,7 +2,6 @@ package hooks
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -217,7 +216,6 @@ func InitializePluginRegistry() ([]string, error) {
 		return nil, err
 	}
 
-	log.Printf("[InitializePluginRegistry] Scanned plugins: %v\n", pluginNames)
 	return pluginNames, nil
 }
 

@@ -13,11 +13,7 @@ var operationRegistry = make(map[string]OperationHandler)
 func RegisterOperationHandler(action string, handler OperationHandler) {
 	// Simplify action name for registration
 	simplifiedAction := simplifyActionName(action)
-	if _, exists := operationRegistry[simplifiedAction]; exists {
-		log.Printf("[RegisterOperationHandler] Warning: Action '%s' is already registered. Overwriting handler.", simplifiedAction)
-	}
 	operationRegistry[simplifiedAction] = handler
-	log.Printf("[RegisterOperationHandler] Handler registered for action: %s (simplified: %s)", action, simplifiedAction)
 }
 
 // DispatchInput 根據解析結果執行對應的操作處理器
@@ -45,7 +41,6 @@ func DispatchInput(action string, params map[string]interface{}, ctx *HookContex
 		return
 	}
 
-	log.Printf("[DispatchInput] Executing handler for action: %s (simplified: %s) with params: %+v", action, simplifiedAction, params)
 	handler(ctx, params)
 
 	// 確保只執行一次對應的 Hook

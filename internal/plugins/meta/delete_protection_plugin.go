@@ -27,17 +27,14 @@ func (p *DeleteProtectionPlugin) RegisterHooks(hookManager *hooks.HookManager) {
 	}
 
 	utils.RegisterDynamicHook(hookManager, p.BeforeDeleteHook, 50, "admin", func(ctx *hooks.HookContext) hooks.HookResult {
-		fmt.Println("[BeforeDeleteHook] Checking if data is critical...")
 
 		if ctx.Get("data") == "critical" {
-			fmt.Println("[BeforeDeleteHook] Deletion blocked: Critical data detected.")
 			return hooks.HookResult{
 				StopExecution: true,
 				Error:         fmt.Errorf("cannot delete critical data"),
 			}
 		}
 
-		fmt.Println("[BeforeDeleteHook] Data is safe to delete.")
 		return hooks.HookResult{}
 	})
 }
