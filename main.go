@@ -22,12 +22,12 @@ func main() {
 		{Input: "subscription_reminder", Role: "subscriber", Context: map[string]interface{}{"user_id": 142}},
 		{Input: "create_user", Role: "admin", Context: map[string]interface{}{"username": "alice", "email": "alice@example.com"}},
 		{Input: "update_user", Role: "admin", Context: map[string]interface{}{"username": "alice", "new_email": "alice.new@example.com"}},
-		{Input: "delete_user", Role: "admin", Context: map[string]interface{}{"username": "alice"}},
+		{Input: "delete_user", Role: "user", Context: map[string]interface{}{"username": "alice"}},
 	}
 
 	for _, input := range clientInputs {
 		log.Printf("=== 測試輸入：%s (角色：%s) ===", input.Input, input.Role)
-		processor.ProcessWithContext(input)
+		processor.Process(input)
 	}
 
 	// 輸出 Hook Stats

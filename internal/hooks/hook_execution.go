@@ -17,12 +17,19 @@ func (hm *HookManager) Execute(name string, ctx *HookContext, async bool) {
 	}
 
 	start := time.Now()
-	log.Printf("[Hook] Executing hook '%s' with %d handlers", name, len(hooks))
+	for _, h := range hooks {
+		if h.Filter(ctx) { // 這裡過濾
 
-	if async {
-		hm.executeAsync(hooks, ctx)
-	} else {
-		hm.executeSync(hooks, ctx)
+			log.Printf("[Hook] Executing hook '%s' with %d handlers", name, len(hooks))
+
+			if async {
+				hm.executeAsync(hooks, ctx)
+			} else {
+				hm.executeSync(hooks, ctx)
+			}
+		} else {
+			fmt.Printf("Hook: %s filtered out due to role or conditions\n", h.Name())
+		}
 	}
 
 	duration := time.Since(start)

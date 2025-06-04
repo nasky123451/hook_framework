@@ -24,12 +24,13 @@ func NewClientInputProcessor(env *hooks.HookEnvironment, printer *utils.Printer)
 	}
 }
 
-func (p *ClientInputProcessor) ProcessWithContext(clientInput ClientInput) {
+func (p *ClientInputProcessor) Process(clientInput ClientInput) {
 	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
 
 	p.Env.Context.Reset()
 
 	p.Env.Context.SetUserData("role", clientInput.Role)
+	p.Env.Context.SetEnvData("role", clientInput.Role)
 
 	for k, v := range clientInput.Context {
 		p.Env.Context.SetEnvData(k, v)
