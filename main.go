@@ -2,32 +2,32 @@ package main
 
 import (
 	"hook_framework/internal/framework"
+	"log"
 )
 
 func main() {
 	// 初始化框架
 	processor, printer, initializedPlugins := framework.InitializeFramework()
 
-	// 模擬多個客戶端輸入
-	clientInputs := []struct {
-		Input string
-		Role  string
-	}{
-		{"修改 email 為 example@example.com", "admin"},            // 測試修改 email
-		{"更新用戶名為 John Doe", "user"},                            // 測試更新用戶名
-		{"啟用兩步驗證", "admin"},                                    // 測試啟用兩步驗證
-		{"刪除關鍵數據", "admin"},                                    // 測試刪除操作
-		{"刪除關鍵數據", "user"},                                     // 測試無權限刪除
-		{"檢查系統狀態", "viewer"},                                   // 測試檢查系統狀態
-		{"啟用夜間模式", "editor"},                                   // 測試啟用夜間模式
-		{"傳送通知內容為 Hello World 傳送給 user@example.com", "editor"}, // 測試帶有 email 的通知
-		{"傳送通知內容為 Hello World", "admin"},                       // 測試 admin 無視規則
-		{"禁用通知", "admin"},                                      // 測試禁用通知
-		{"未知操作測試", "guest"},                                    // 測試未知操作
+	clientInputs := []framework.ClientInput{
+		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com", "env": "web"}},
+		{Input: "login_failure_alert", Role: "security", Context: map[string]interface{}{"ip": "192.168.0.1"}},
+		{Input: "book_room", Role: "employee", Context: map[string]interface{}{"room": "A101", "time": "2025-06-05 10:00", "device": "mobile"}},
+		{Input: "submit_report", Role: "auditor", Context: map[string]interface{}{"doc_type": "financial"}},
+		{Input: "webhook_sync", Role: "integration", Context: map[string]interface{}{"source": "GitHub"}},
+		{Input: "system_monitor", Role: "devops", Context: map[string]interface{}{"server": "prod-api-1"}},
+		{Input: "create_invoice", Role: "finance", Context: map[string]interface{}{"invoice_no": "INV-123456", "amount": 12900}},
+		{Input: "set_user_pref", Role: "user", Context: map[string]interface{}{"theme": "dark_mode"}},
+		{Input: "set_language", Role: "user", Context: map[string]interface{}{"language": "zh-TW"}},
+		{Input: "subscription_reminder", Role: "subscriber", Context: map[string]interface{}{"user_id": 142}},
+		{Input: "create_user", Role: "admin", Context: map[string]interface{}{"username": "alice", "email": "alice@example.com"}},
+		{Input: "update_user", Role: "admin", Context: map[string]interface{}{"username": "alice", "new_email": "alice.new@example.com"}},
+		{Input: "delete_user", Role: "admin", Context: map[string]interface{}{"username": "alice"}},
 	}
 
-	for _, clientInput := range clientInputs {
-		processor.Process(clientInput)
+	for _, input := range clientInputs {
+		log.Printf("=== 測試輸入：%s (角色：%s) ===", input.Input, input.Role)
+		processor.ProcessWithContext(input)
 	}
 
 	// 輸出 Hook Stats

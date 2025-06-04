@@ -3,53 +3,63 @@ package framework
 import (
 	"fmt"
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/nlp"
 	"hook_framework/pkg/utils"
 )
 
-type ClientInputProcessor struct {
-	Env       *hooks.HookEnvironment
-	NLPEngine *nlp.NLP
-	Printer   *utils.Printer
+type ClientInput struct {
+	Input   string
+	Role    string
+	Context map[string]interface{}
 }
 
-func NewClientInputProcessor(env *hooks.HookEnvironment, nlpEngine *nlp.NLP, printer *utils.Printer) *ClientInputProcessor {
+type ClientInputProcessor struct {
+	Env     *hooks.HookEnvironment
+	Printer *utils.Printer
+}
+
+func NewClientInputProcessor(env *hooks.HookEnvironment, printer *utils.Printer) *ClientInputProcessor {
 	return &ClientInputProcessor{
-		Env:       env,
-		NLPEngine: nlpEngine,
-		Printer:   printer,
+		Env:     env,
+		Printer: printer,
 	}
 }
 
-func (p *ClientInputProcessor) Process(clientInput struct{ Input, Role string }) {
+func (p *ClientInputProcessor) ProcessWithContext(clientInput ClientInput) {
 	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
 
-	// 重置上下文的錯誤和停止狀態
 	p.Env.Context.Reset()
 
-	// 設置角色到上下文
-	p.Env.Context.Set("role", clientInput.Role)
+	p.Env.Context.SetUserData("role", clientInput.Role)
 
-	// 解析輸入
-	intent := p.NLPEngine.ParseInput(clientInput.Input)
-	if intent.Action == "" {
-		p.Printer.PrintMessage("[Process] No action detected from input.")
-		return
+	for k, v := range clientInput.Context {
+		p.Env.Context.SetEnvData(k, v)
 	}
 
-	params := utils.ConvertParamsToInterface(intent.Params)
+	// 取消 NLP，直接以 clientInput.Input 當作 hookName
+	hookName := clientInput.Input
 
-	// 添加輸入文本到參數
-	params["input_text"] = clientInput.Input
+	// params 可以放一些 context 裡的環境變數，或直接空參數
+	params := map[string]interface{}{
+		"input_text": clientInput.Input,
+	}
 
-	// 通過 DispatchInput 處理操作
-	hooks.DispatchInput(intent.Action, params, p.Env.Context, p.Env.HookManager)
+	hooks.DispatchInput(hookName, params, p.Env.Context, p.Env.HookManager)
 
-	// 檢查是否有錯誤
-	if len(p.Env.Context.Errors) > 0 {
-		p.Printer.PrintMessage("[Process] Errors occurred during processing:")
-		for _, err := range p.Env.Context.Errors {
-			p.Printer.PrintError(err)
+	p.PrintResult(p.Env.Context)
+}
+
+func (p *ClientInputProcessor) PrintResult(ctx *hooks.HookContext) {
+	if len(ctx.Results) > 0 {
+		p.Printer.PrintMessage("[Result] Execution Results:")
+		for i, result := range ctx.Results {
+			p.Printer.PrintMessage(fmt.Sprintf("  #%d: %v", i+1, result))
+		}
+	}
+
+	if len(ctx.Errors) > 0 {
+		p.Printer.PrintMessage("[Error] Errors Occurred:")
+		for i, err := range ctx.Errors {
+			p.Printer.PrintError(fmt.Errorf("  #%d: %v", i+1, err))
 		}
 	}
 }

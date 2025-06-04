@@ -32,12 +32,8 @@ func DispatchInput(action string, params map[string]interface{}, ctx *HookContex
 
 	handleCommonParameters(params, ctx)
 
-	// Simplify action name for lookup
-	simplifiedAction := simplifyActionName(action)
-
-	handler, exists := operationRegistry[simplifiedAction]
+	handler, exists := operationRegistry[action]
 	if !exists {
-		log.Printf("[DispatchInput] No handler found for action: %s (simplified: %s)", action, simplifiedAction)
 		return
 	}
 
@@ -49,16 +45,8 @@ func DispatchInput(action string, params map[string]interface{}, ctx *HookContex
 		return
 	}
 
-	// 使用 GetHookName 獲取標準化名稱
-	hookName, exists := GetHookName(action)
-	if !exists {
-		log.Printf("[DispatchInput] No HookName found for action: %s (simplified: %s)", action, simplifiedAction)
-		return
-	}
-
-	normalizedName := simplifyActionName(hookName)
 	if hookManager != nil {
-		hookManager.Execute(normalizedName, ctx, false)
+		hookManager.Execute(action, ctx, false)
 	}
 }
 

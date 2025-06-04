@@ -16,10 +16,6 @@ type Plugin interface {
 	RegisterHooks(hm *HookManager) // Change HookManager type to *common.HookManager
 }
 
-func RegisterHooks(manager *HookManager) {
-
-}
-
 // LoadPlugin 根據名稱加載插件
 func LoadPlugin(name string) (Plugin, error) {
 	return GetPluginByName(name) // 使用 plugin_registry.go 中的 GetPluginByName

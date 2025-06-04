@@ -1,30 +1,18 @@
 package hooks
 
-import (
-	"hook_framework/pkg/nlp"
-)
-
 type PluginWrapper struct {
 	Impl Plugin
 	Meta map[string]interface{}
 }
 
-type Wrapper interface {
-	Unwrap() Plugin
-}
-
 type ParserRegistrable interface {
-	RegisterParsers(*nlp.NLP)
+	RegisterParsers()
 }
 
-func (pw *PluginWrapper) RegisterParsers(nlpEngine *nlp.NLP) {
+func (pw *PluginWrapper) RegisterParsers() {
 	if registrable, ok := pw.Impl.(ParserRegistrable); ok {
-		registrable.RegisterParsers(nlpEngine)
+		registrable.RegisterParsers()
 	}
-}
-
-func (w *PluginWrapper) Unwrap() Plugin {
-	return w.Impl
 }
 
 func (pw *PluginWrapper) Name() string {

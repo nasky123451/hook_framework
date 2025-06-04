@@ -27,11 +27,6 @@ func (h *GenericHook) Filter(ctx *hooks.HookContext) bool {
 	return true
 }
 
-// RequiredRole 返回執行 Hook 所需的角色
-func (h *GenericHook) RequiredRole() string {
-	return h.Role
-}
-
 // Run 執行 Hook 的邏輯
 func (h *GenericHook) Run(ctx *hooks.HookContext) hooks.HookResult {
 	if h.RunFunc != nil {
