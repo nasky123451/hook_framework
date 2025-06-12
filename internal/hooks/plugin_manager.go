@@ -31,8 +31,3 @@ func (pm *PluginManager) InitializePlugins(ctx *HookContext, hm *HookManager) []
 	}
 	return initializedPlugins
 }
-
-// GetRegisteredPlugins 返回所有已註冊的插件
-func (pm *PluginManager) GetRegisteredPlugins() []Plugin {
-	return pm.plugins
-}

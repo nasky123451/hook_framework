@@ -31,8 +31,8 @@ func main() {
 	}
 
 	clientInputs = []framework.ClientInput{
-		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com", "env": "web"}},
-		{Input: "create_account", Role: "user", Context: map[string]interface{}{"email": "user2@example.com", "env": "mobile"}},
+		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com"}},
+		{Input: "create_account", Role: "user", Context: map[string]interface{}{"email": "user2@example.com"}},
 	}
 
 	for _, input := range clientInputs {

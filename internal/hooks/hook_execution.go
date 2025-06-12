@@ -53,6 +53,7 @@ func (hm *HookManager) ExecuteHookByName(name string, ctx *HookContext) HookResu
 	finalResult.Success = true
 
 	start := time.Now()
+	finalResult.DateTime = start
 	for _, handler := range sorted {
 		if !handler.Filter(ctx) {
 			continue

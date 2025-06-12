@@ -7,16 +7,17 @@ This project is a modular hook framework designed to dynamically manage and exec
 ```
 hook_framework/
 ├── internal/
-│   ├── common/
 │   ├── framework/
 │   ├── hooks/
 │   ├── plugins/
 │   │   ├── meta/
-├── pkg/
-│   ├── utils/
-│   ├── nlp/
+├── flow_test/
 ├── main.go
-└── README.md
+├── README.md
+├── hook_docs.md
+├── go.mod
+├── go.sum
+└── .gitignore
 ```
 
 ## Overview of Components
@@ -26,7 +27,7 @@ Handles the core framework logic:
 - **Processor**: Processes client input and executes hooks.
 - **Initializer**: Sets up the framework, plugins, and hooks.
 - **Cleanup**: Outputs hook statistics and handles resource cleanup.
-- **Utils**: Provides utility functions for framework operations.
+- **Printer**: Provides utility functions for printing logs and statistics.
 
 ### `internal/hooks/`
 Manages hooks and their execution:
@@ -36,28 +37,33 @@ Manages hooks and their execution:
 - **Plugin Manager**: Manages plugins and their hooks.
 - **Plugin Registry**: Registers and retrieves plugin types.
 - **Plugin Interface**: Defines the plugin interface and metadata.
+- **Hook Builder**: Provides a builder pattern for defining hooks.
+- **Hook Graph**: Manages directed acyclic graphs (DAG) for hook execution.
+- **Hook Execution**: Handles the execution of hooks.
+- **Hook Stats**: Tracks statistics for hook execution.
 
 ### `internal/plugins/meta/`
 Contains individual plugins:
+- **ApprovalRoutingPlugin**: Routes submitted reports for approval.
+- **BookingLockPlugin**: Prevents conflicts in room booking schedules.
+- **InvoiceAuditPlugin**: Audits invoice creation details.
+- **LocalizationPlugin**: Sets user language preferences.
+- **NotifyPlugin**: Handles notifications and Jira task creation.
+- **SecurityAlertPlugin**: Manages security alerts for login failures.
+- **SubscriptionReminderPlugin**: Sends subscription reminders.
+- **SystemMonitorPlugin**: Handles system monitoring alerts.
 - **UpdateUsernamePlugin**: Updates usernames dynamically.
-- **UpdateEmailPlugin**: Updates email addresses dynamically.
-- **TwoFactorPlugin**: Enables two-factor authentication.
-- **NotificationPlugin**: Manages notifications.
-- **DeleteProtectionPlugin**: Protects critical data from deletion.
-- **Hook Config**: Provides hook configurations for plugins.
+- **UserManagementPlugin**: Manages user creation, updates, and deletion.
+- **UserPreferencePlugin**: Handles user preferences like themes and languages.
+- **WebhookSyncPlugin**: Synchronizes webhooks from external sources.
+- **WelcomeEmailPlugin**: Sends welcome emails upon account creation.
 
-### `pkg/utils/`
-Provides utility functions:
-- **Config Loader**: Loads plugin configuration files.
-- **Operations**: Registers and manages operation handlers.
-- **Simulations**: Simulates hook execution scenarios.
+### `flow_test/`
+Contains flow tests for simulating hook execution scenarios:
+- **CreateAccountFlow**: Simulates account creation, notification, and Jira task creation.
 
-### `pkg/nlp/`
-Handles NLP-based input parsing:
-- **NLP Engine**: Parses client input to determine actions and parameters.
-
-### `main.go`
-Entry point of the application. Initializes the framework and processes client inputs.
+### `hook_docs.md`
+Auto-generated documentation for all registered hooks.
 
 ---
 
@@ -66,95 +72,27 @@ Entry point of the application. Initializes the framework and processes client i
 ### Initialization
 The framework is initialized using the `InitializeFramework` function in `internal/framework/initializer.go`. This function:
 1. Sets up the hook environment.
-2. Loads plugin configurations from `plugin_config.json`.
+2. Loads plugin configurations dynamically.
 3. Registers plugins and their hooks.
-4. Initializes the NLP engine for input parsing.
+4. Initializes the HookGraph for DAG-based execution.
 
 ### Processing Client Input
 Client input is processed using the `ClientInputProcessor` in `internal/framework/processor.go`. This processor:
-1. Parses the input using the NLP engine.
-2. Dispatches the parsed action to the appropriate handler or hook.
+1. Parses the input and sets up the context.
+2. Executes hooks or DAG chains based on the input.
 3. Handles errors and stops execution if necessary.
 
 ### Hook Execution
-Hooks are dynamically registered and executed using the `RegisterHook` and `DispatchInput` functions in `internal/hooks/registry.go` and `internal/hooks/dispatcher.go`.
+Hooks are dynamically registered and executed using the `RegisterHook` and `ExecuteHookByName` functions in `internal/hooks/registry.go` and `internal/hooks/hook_execution.go`.
 
 ### Plugins
 Plugins are modular components that extend the framework's functionality. Each plugin:
 1. Implements the `hooks.Plugin` interface.
-2. Registers hooks dynamically using `RegisterDynamicHook`.
+2. Registers hooks dynamically using `RegisterHooks`.
 3. Optionally registers parsers for NLP-based input handling.
 
-### Simulations
-Simulations for operations like save and delete are provided in `pkg/utils/simulations.go`. These simulate hook execution scenarios for testing.
-
----
-
-## Example Configuration (`plugin_config.json`)
-
-```json
-[
-  {
-    "name": "UpdateUsernamePlugin",
-    "priority": 15,
-    "enabled": true,
-    "hooks": ["update_username"]
-  },
-  {
-    "name": "UpdateEmailPlugin",
-    "priority": 15,
-    "enabled": true,
-    "hooks": ["update_email"]
-  },
-  {
-    "name": "TwoFactorPlugin",
-    "priority": 25,
-    "enabled": true,
-    "hooks": ["enable_two_factor"]
-  },
-  {
-    "name": "NotificationPlugin",
-    "priority": 40,
-    "enabled": true,
-    "hooks": ["add_notification", "disable_notifications"]
-  },
-  {
-    "name": "DeleteProtectionPlugin",
-    "priority": 50,
-    "enabled": true,
-    "hooks": ["before_delete"]
-  }
-]
-```
-
----
-
-## Data Structures
-
-### `hooks.Plugin`
-```go
-type Plugin interface {
-    Name() string
-    GetHookNames() []string
-    RegisterHooks(hm *HookManager)
-}
-```
-
-### `nlp.Intent`
-```go
-type Intent struct {
-    Action string
-    Params map[string]string
-}
-```
-
-### `hooks.HookResult`
-```go
-type HookResult struct {
-    StopExecution bool
-    Error         error
-}
-```
+### Flow Tests
+Flow tests simulate hook execution scenarios for testing. For example, `flow_test/create_account_flow.go` simulates account creation and related operations.
 
 ---
 
@@ -174,7 +112,7 @@ type HookResult struct {
 
 ## Notes
 
-- Ensure the `plugin_config.json` file is present in the root directory for plugin configuration.
+- Ensure the `hook_docs.md` file is generated for hook documentation.
 - Plugins must implement the `hooks.Plugin` interface to be compatible with the framework.
 - The framework dynamically loads plugins and hooks based on the configuration file and registered plugins.
 
@@ -182,4 +120,4 @@ type HookResult struct {
 
 ## License
 
-This project is licensed under the MIT License.# hook_framework
+This project is licensed under the MIT License.
