@@ -16,10 +16,6 @@ func (hm *HookManager) Execute(name string, ctx *HookContext, async bool) error 
 	result := hm.ExecuteHookByName(name, ctx)
 	ctx.AddExecutionLog(name, result) // 紀錄流程與結果
 
-	hm.mu.Lock()
-	hm.contexts = append(hm.contexts, ctx.Clone())
-	hm.mu.Unlock()
-
 	if result.StopExecution {
 		fmt.Printf("[HookGraph] Hook %s 停止後續流程\n", name)
 		return nil
@@ -49,6 +45,7 @@ func (hm *HookManager) ExecuteHookByName(name string, ctx *HookContext) HookResu
 	})
 
 	var finalResult HookResult
+	finalResult.Role = ctx.EnvData["role"].(string)
 	finalResult.Name = name
 	finalResult.Success = true
 

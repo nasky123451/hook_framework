@@ -10,6 +10,7 @@ type HookHandler interface {
 }
 
 type HookResult struct {
+	Role          string
 	Name          string
 	Success       bool
 	Duration      time.Duration

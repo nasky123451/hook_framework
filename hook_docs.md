@@ -1,6 +1,14 @@
 # Hook Documentation
 
-Generated at: 2025-06-12T15:54:39+08:00
+Generated at: 2025-06-12T17:28:40+08:00
+
+## submit_report
+- 📄 Description: Handles submission of reports and routes them for approval
+- 🔗 Registered From: approval_routing_plugin.go:32 (meta.(*ApprovalRoutingPlugin).RegisterHooks)
+- 👥 Allowed Roles:
+  - auditor
+- 🎯 Expected Parameters:
+  - doc_type
 
 ## system_monitor
 - 📄 Description: Handles system monitoring alerts
@@ -10,35 +18,21 @@ Generated at: 2025-06-12T15:54:39+08:00
 - 🎯 Expected Parameters:
   - server
 
-## create_user
-- 📄 Description: Handles user management operations: create_user
-- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
+## update_username
+- 📄 Description: Handles updating a user's username
+- 🔗 Registered From: update_username_plugin.go:35 (meta.(*UpdateUsernamePlugin).RegisterHooks)
 - 👥 Allowed Roles:
   - admin
 - 🎯 Expected Parameters:
   - username
-  - email
-  - new_email
 
-## update_user
-- 📄 Description: Handles user management operations: update_user
-- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
+## set_user_pref
+- 📄 Description: Handles setting user preferences like theme, language, etc.
+- 🔗 Registered From: user_preference_plugin.go:31 (meta.(*UserPreferencePlugin).RegisterHooks)
 - 👥 Allowed Roles:
-  - admin
+  - user
 - 🎯 Expected Parameters:
-  - username
-  - email
-  - new_email
-
-## delete_user
-- 📄 Description: Handles user management operations: delete_user
-- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
-- 👥 Allowed Roles:
-  - admin
-- 🎯 Expected Parameters:
-  - username
-  - email
-  - new_email
+  - theme
 
 ## webhook_sync
 - 📄 Description: Handles synchronization of webhooks from external sources
@@ -55,6 +49,16 @@ Generated at: 2025-06-12T15:54:39+08:00
   - admin
 - 🎯 Expected Parameters:
   - email
+
+## book_room
+- 📄 Description: Handles room booking and prevents conflicts in scheduling
+- 🔗 Registered From: booking_lock_plugin.go:33 (meta.(*BookingLockPlugin).RegisterHooks)
+- 👥 Allowed Roles:
+  - admin
+  - employee
+- 🎯 Expected Parameters:
+  - room
+  - time
 
 ## create_invoice
 - 📄 Description: Handles invoice creation and audits the invoice details
@@ -92,6 +96,14 @@ Generated at: 2025-06-12T15:54:39+08:00
 - 🎯 Expected Parameters:
   - task_details
 
+## login_failure_alert
+- 📄 Description: Handles security alerts for login failures
+- 🔗 Registered From: security_alert_plugin.go:29 (meta.(*SecurityAlertPlugin).RegisterHooks)
+- 👥 Allowed Roles:
+  - security
+- 🎯 Expected Parameters:
+  - ip
+
 ## subscription_reminder
 - 📄 Description: Handles sending subscription reminders to users
 - 🔗 Registered From: subscription_reminder_plugin.go:29 (meta.(*SubscriptionReminderPlugin).RegisterHooks)
@@ -100,44 +112,32 @@ Generated at: 2025-06-12T15:54:39+08:00
 - 🎯 Expected Parameters:
   - user_id
 
-## update_username
-- 📄 Description: Handles updating a user's username
-- 🔗 Registered From: update_username_plugin.go:35 (meta.(*UpdateUsernamePlugin).RegisterHooks)
+## create_user
+- 📄 Description: Handles user management operations: create_user
+- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
 - 👥 Allowed Roles:
   - admin
 - 🎯 Expected Parameters:
   - username
+  - email
+  - new_email
 
-## set_user_pref
-- 📄 Description: Handles setting user preferences like theme, language, etc.
-- 🔗 Registered From: user_preference_plugin.go:31 (meta.(*UserPreferencePlugin).RegisterHooks)
-- 👥 Allowed Roles:
-  - user
-- 🎯 Expected Parameters:
-  - theme
-
-## submit_report
-- 📄 Description: Handles submission of reports and routes them for approval
-- 🔗 Registered From: approval_routing_plugin.go:32 (meta.(*ApprovalRoutingPlugin).RegisterHooks)
-- 👥 Allowed Roles:
-  - auditor
-- 🎯 Expected Parameters:
-  - doc_type
-
-## book_room
-- 📄 Description: Handles room booking and prevents conflicts in scheduling
-- 🔗 Registered From: booking_lock_plugin.go:33 (meta.(*BookingLockPlugin).RegisterHooks)
+## update_user
+- 📄 Description: Handles user management operations: update_user
+- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
 - 👥 Allowed Roles:
   - admin
-  - employee
 - 🎯 Expected Parameters:
-  - room
-  - time
+  - username
+  - email
+  - new_email
 
-## login_failure_alert
-- 📄 Description: Handles security alerts for login failures
-- 🔗 Registered From: security_alert_plugin.go:29 (meta.(*SecurityAlertPlugin).RegisterHooks)
+## delete_user
+- 📄 Description: Handles user management operations: delete_user
+- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
 - 👥 Allowed Roles:
-  - security
+  - admin
 - 🎯 Expected Parameters:
-  - ip
+  - username
+  - email
+  - new_email

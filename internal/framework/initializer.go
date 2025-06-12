@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"hook_framework/internal/hooks"
 	"hook_framework/internal/plugins"
+	"hook_framework/internal/utils"
 )
 
-func InitializeFramework() (*ClientInputProcessor, *Printer, *hooks.HookManager, *hooks.HookGraph) {
-	printer := NewPrinter()
+func InitializeFramework() (*ClientInputProcessor, *utils.Printer, *hooks.HookManager, *hooks.HookGraph) {
+	printer := utils.NewPrinter()
 	env := hooks.NewHookEnvironment("system", "main")
 
 	pluginManager := hooks.NewPluginManager()

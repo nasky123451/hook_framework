@@ -11,7 +11,7 @@ func main() {
 	processor, printer, h, hg := framework.InitializeFramework()
 
 	clientInputs := []framework.ClientInput{
-		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com", "env": "web"}},
+		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com"}},
 		{Input: "login_failure_alert", Role: "security", Context: map[string]interface{}{"ip": "192.168.0.1"}},
 		{Input: "book_room", Role: "employee", Context: map[string]interface{}{"room": "A101", "time": "2025-06-05 10:00", "device": "mobile"}},
 		{Input: "submit_report", Role: "auditor", Context: map[string]interface{}{"doc_type": "financial"}},
@@ -32,7 +32,7 @@ func main() {
 
 	clientInputs = []framework.ClientInput{
 		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com"}},
-		{Input: "create_account", Role: "user", Context: map[string]interface{}{"email": "user2@example.com"}},
+		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "user2@example.com"}},
 	}
 
 	for _, input := range clientInputs {

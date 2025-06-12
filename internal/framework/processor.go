@@ -3,6 +3,7 @@ package framework
 import (
 	"fmt"
 	"hook_framework/internal/hooks"
+	"hook_framework/internal/utils"
 )
 
 type ClientInput struct {
@@ -13,10 +14,10 @@ type ClientInput struct {
 
 type ClientInputProcessor struct {
 	Env     *hooks.HookEnvironment
-	Printer *Printer
+	Printer *utils.Printer
 }
 
-func NewClientInputProcessor(env *hooks.HookEnvironment, printer *Printer) *ClientInputProcessor {
+func NewClientInputProcessor(env *hooks.HookEnvironment, printer *utils.Printer) *ClientInputProcessor {
 	return &ClientInputProcessor{
 		Env:     env,
 		Printer: printer,

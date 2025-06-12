@@ -19,7 +19,6 @@ type HookManager struct {
 	pool      *ants.Pool
 	plugins   []Plugin
 	hookRoles map[string][]string
-	contexts  []*HookContext
 }
 
 type HookOptions struct {
@@ -115,16 +114,6 @@ func (hm *HookManager) GetRegisteredHooks() map[string][]string {
 		result[name] = handlerNames
 	}
 	return result
-}
-
-func (hm *HookManager) GetContexts() []*HookContext {
-	hm.mu.Lock()
-	defer hm.mu.Unlock()
-
-	// 回傳 shallow copy 避免外部誤改
-	out := make([]*HookContext, len(hm.contexts))
-	copy(out, hm.contexts)
-	return out
 }
 
 // 簡單角色權限檢查範例 (可整合外部 IAM)
