@@ -1,13 +1,14 @@
 package main
 
 import (
+	flowtest "hook_framework/flow_test"
 	"hook_framework/internal/framework"
 	"log"
 )
 
 func main() {
 	// 初始化框架
-	processor, printer, initializedPlugins := framework.InitializeFramework()
+	processor, printer, h, hg := framework.InitializeFramework()
 
 	clientInputs := []framework.ClientInput{
 		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com", "env": "web"}},
@@ -26,10 +27,23 @@ func main() {
 	}
 
 	for _, input := range clientInputs {
-		log.Printf("=== 測試輸入：%s (角色：%s) ===", input.Input, input.Role)
-		processor.Process(input)
+		processor.Process(input, h)
+	}
+
+	clientInputs = []framework.ClientInput{
+		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com", "env": "web"}},
+		{Input: "create_account", Role: "user", Context: map[string]interface{}{"email": "user2@example.com", "env": "mobile"}},
+	}
+
+	for _, input := range clientInputs {
+		processor.ProcessWithGraph(input, hg)
+	}
+
+	err := flowtest.RunCreateAccountFlow("new_user@example.com")
+	if err != nil {
+		log.Fatal("流程執行失敗:", err)
 	}
 
 	// 輸出 Hook Stats
-	framework.PrintStats(processor.Env, printer, initializedPlugins)
+	framework.PrintStats(processor.Env, printer)
 }

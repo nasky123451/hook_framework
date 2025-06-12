@@ -1,9 +1,7 @@
 package meta
 
 import (
-	"fmt"
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/utils"
 )
 
 type SystemMonitorPlugin struct{}
@@ -16,14 +14,19 @@ func (p *SystemMonitorPlugin) GetHookNames() []string {
 	return []string{"system_monitor"}
 }
 
-func (p *SystemMonitorPlugin) RegisterHooks(hookManager *hooks.HookManager) {
-	utils.RegisterDynamicHook(hookManager, "system_monitor", 10, "devops", func(ctx *hooks.HookContext) hooks.HookResult {
-		server := ctx.GetEnvData("server")
+func (p *SystemMonitorPlugin) RegisterHooks(hm *hooks.HookManager) {
+	hooks.New("system_monitor").
+		WithDescription("Handles system monitoring alerts").
+		WithParamHints("server").
+		WithPriority(10).
+		AllowRoles("devops").
+		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
+			server, _ := ctx.GetEnvData("server")
 
-		message := fmt.Sprintf("[SystemMonitorPlugin] Monitoring alert on server: %v.\n", server)
-		ctx.SetEnvData("approval_message", message)
-		return hooks.HookResult{Success: true}
-	})
+			//todo: 實際的監控邏輯可以在這裡實現
+
+			return ctx.SuccessWithMessage("Monitoring alert on server: %s", server)
+		}).RegisterTo(hm)
 }
 
 func init() {

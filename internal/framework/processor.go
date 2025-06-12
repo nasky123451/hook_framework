@@ -24,7 +24,7 @@ func NewClientInputProcessor(env *hooks.HookEnvironment, printer *utils.Printer)
 	}
 }
 
-func (p *ClientInputProcessor) Process(clientInput ClientInput) {
+func (p *ClientInputProcessor) Process(clientInput ClientInput, h *hooks.HookManager) {
 	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
 
 	p.Env.Context.Reset()
@@ -36,15 +36,32 @@ func (p *ClientInputProcessor) Process(clientInput ClientInput) {
 		p.Env.Context.SetEnvData(k, v)
 	}
 
-	// 取消 NLP，直接以 clientInput.Input 當作 hookName
-	hookName := clientInput.Input
-
-	// params 可以放一些 context 裡的環境變數，或直接空參數
-	params := map[string]interface{}{
-		"input_text": clientInput.Input,
+	if p.Env.HookManager != nil {
+		if err := h.Execute(clientInput.Input, p.Env.Context, false); err != nil {
+			p.Printer.PrintError(fmt.Errorf("Hook execution error: %w", err))
+		}
 	}
 
-	hooks.DispatchInput(hookName, params, p.Env.Context, p.Env.HookManager)
+	p.PrintResult(p.Env.Context)
+}
+
+func (p *ClientInputProcessor) ProcessWithGraph(clientInput ClientInput, hg *hooks.HookGraph) {
+	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
+
+	p.Env.Context.Reset()
+
+	p.Env.Context.SetUserData("role", clientInput.Role)
+	p.Env.Context.SetEnvData("role", clientInput.Role)
+
+	for k, v := range clientInput.Context {
+		p.Env.Context.SetEnvData(k, v)
+	}
+
+	if p.Env.HookManager != nil {
+		if err := hg.Execute(clientInput.Input, p.Env.Context); err != nil {
+			p.Printer.PrintError(fmt.Errorf("HookGraph execution error: %w", err))
+		}
+	}
 
 	p.PrintResult(p.Env.Context)
 }

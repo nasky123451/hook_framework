@@ -1,9 +1,7 @@
 package meta
 
 import (
-	"fmt"
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/utils"
 )
 
 type SecurityAlertPlugin struct{}
@@ -16,14 +14,19 @@ func (p *SecurityAlertPlugin) GetHookNames() []string {
 	return []string{"login_failure_alert"}
 }
 
-func (p *SecurityAlertPlugin) RegisterHooks(hookManager *hooks.HookManager) {
-	utils.RegisterDynamicHook(hookManager, "login_failure_alert", 10, "security", func(ctx *hooks.HookContext) hooks.HookResult {
-		ip, _ := ctx.GetEnvData("ip").(string)
+func (p *SecurityAlertPlugin) RegisterHooks(hm *hooks.HookManager) {
+	hooks.New("login_failure_alert").
+		WithDescription("Handles security alerts for login failures").
+		WithParamHints("ip").
+		WithPriority(10).
+		AllowRoles("security").
+		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
+			ip, _ := ctx.GetEnvString("ip")
 
-		message := fmt.Sprintf("Security alert triggered from IP %s", ip)
-		ctx.SetEnvData("approval_message", message)
-		return hooks.HookResult{Success: true}
-	})
+			// todo: 實際的安全警報邏輯可以在這裡實現
+
+			return ctx.SuccessWithMessage("Security alert triggered from IP %s", ip)
+		}).RegisterTo(hm)
 }
 
 func init() {

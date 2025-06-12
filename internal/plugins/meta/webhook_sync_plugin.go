@@ -3,7 +3,6 @@ package meta
 import (
 	"fmt"
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/utils"
 )
 
 type WebhookSyncPlugin struct{}
@@ -16,14 +15,20 @@ func (p *WebhookSyncPlugin) GetHookNames() []string {
 	return []string{"webhook_sync"}
 }
 
-func (p *WebhookSyncPlugin) RegisterHooks(hookManager *hooks.HookManager) {
-	utils.RegisterDynamicHook(hookManager, "webhook_sync", 10, "integration", func(ctx *hooks.HookContext) hooks.HookResult {
-		source := ctx.GetEnvData("source")
+func (p *WebhookSyncPlugin) RegisterHooks(hm *hooks.HookManager) {
+	hooks.New("webhook_sync").
+		WithDescription("Handles synchronization of webhooks from external sources").
+		WithParamHints("source").
+		WithPriority(10).
+		AllowRoles("integration").
+		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
+			source, _ := ctx.GetEnvData("source")
 
-		message := fmt.Sprintf("[WebhookSyncPlugin] Received webhook from %v.\n", source)
-		ctx.SetEnvData("approval_message", message)
-		return hooks.HookResult{Success: true}
-	})
+			fmt.Printf("[WebhookSyncPlugin] Syncing webhooks from source: %s\n", source)
+			//todo: 實際的 webhook 同步邏輯可以在這裡實現
+
+			return ctx.SuccessWithMessage("Webhook sync completed successfully")
+		}).RegisterTo(hm)
 }
 
 func init() {

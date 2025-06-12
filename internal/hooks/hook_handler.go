@@ -15,4 +15,7 @@ type HookResult struct {
 	Duration      time.Duration
 	StopExecution bool
 	Error         error
+	Message       string
 }
+
+type HookHandlerFunc func(ctx *HookContext) HookResult

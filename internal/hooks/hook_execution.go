@@ -2,87 +2,79 @@ package hooks
 
 import (
 	"fmt"
-	"log"
+	"sort"
 	"time"
 )
 
-func (hm *HookManager) Execute(name string, ctx *HookContext, async bool) {
+func (hm *HookManager) Execute(name string, ctx *HookContext, async bool) error {
+
+	// 權限檢查（基於 ctx 的 role）
+	if !hm.CheckPermission(name, ctx) {
+		return fmt.Errorf("permission denied for hook %s and role %s", name, ctx.GetUserData("role"))
+	}
+
+	result := hm.ExecuteHookByName(name, ctx)
+	ctx.AddExecutionLog(name, result) // 紀錄流程與結果
+
+	hm.mu.Lock()
+	hm.contexts = append(hm.contexts, ctx.Clone())
+	hm.mu.Unlock()
+
+	if result.StopExecution {
+		fmt.Printf("[HookGraph] Hook %s 停止後續流程\n", name)
+		return nil
+	}
+
+	return nil
+}
+
+func (hm *HookManager) ExecuteHookByName(name string, ctx *HookContext) HookResult {
 	hm.mu.RLock()
-	hooks := hm.hooks[name]
+	handlers := hm.hooks[name]
 	hm.mu.RUnlock()
 
-	if len(hooks) == 0 {
-		log.Printf("[Hook] No handlers registered for hook '%s'", name)
-		return
-	}
-
-	start := time.Now()
-	for _, h := range hooks {
-		if h.Filter(ctx) { // 這裡過濾
-
-			log.Printf("[Hook] Executing hook '%s' with %d handlers", name, len(hooks))
-
-			if async {
-				hm.executeAsync(hooks, ctx)
-			} else {
-				hm.executeSync(hooks, ctx)
-			}
-		} else {
-			fmt.Printf("Hook: %s filtered out due to role or conditions\n", h.Name())
+	if len(handlers) == 0 {
+		return HookResult{
+			Name:    name,
+			Success: false,
+			Error:   fmt.Errorf("no handlers registered for hook '%s'", name),
 		}
 	}
+
+	// 優先順序排序：小數值優先執行
+	sorted := make([]HookHandler, len(handlers))
+	copy(sorted, handlers)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Priority() < sorted[j].Priority()
+	})
+
+	var finalResult HookResult
+	finalResult.Name = name
+	finalResult.Success = true
+
+	start := time.Now()
+	for _, handler := range sorted {
+		if !handler.Filter(ctx) {
+			continue
+		}
+		result := handler.Run(ctx)
+		finalResult.Message = result.Message
+		if result.Error != nil {
+			finalResult.Success = false
+			finalResult.Error = result.Error
+		}
+		if result.StopExecution {
+			finalResult.StopExecution = true
+			break
+		}
+	}
+	finalResult.Duration = time.Since(start)
 
 	duration := time.Since(start)
 	hm.updateStats(name, duration, HookResult{
 		StopExecution: ctx.IsStopped(),
 		Error:         nil,
 	})
-	log.Printf("[Hook] Finished hook '%s' in %v", name, duration)
-}
 
-func (hm *HookManager) executeSync(hooks []HookHandler, ctx *HookContext) {
-	for _, handler := range hooks {
-		if !handler.Filter(ctx) {
-			log.Printf("[Hook] Handler '%s' skipped due to filter", handler.Name())
-			continue
-		}
-		defer recoverHook(ctx, handler.Name())
-		res := handler.Run(ctx)
-		if res.Error != nil {
-			ctx.AddError(res.Error)
-		}
-		if res.StopExecution {
-			log.Printf("[Hook] Execution stopped by hook '%s'", handler.Name())
-			ctx.Stop()
-			break
-		}
-	}
-}
-
-func (hm *HookManager) executeAsync(hooks []HookHandler, ctx *HookContext) {
-	for _, handler := range hooks {
-		if !handler.Filter(ctx) {
-			log.Printf("[Hook] Handler '%s' skipped due to filter", handler.Name())
-			continue
-		}
-		h := handler
-		_ = hm.pool.Submit(func() {
-			defer recoverHook(ctx, h.Name())
-			res := h.Run(ctx)
-			if res.Error != nil {
-				ctx.AddError(res.Error)
-			}
-			if res.StopExecution {
-				log.Printf("[Hook] Execution stopped by hook '%s'", h.Name())
-				ctx.Stop()
-			}
-		})
-	}
-}
-
-func recoverHook(ctx *HookContext, name string) {
-	if r := recover(); r != nil {
-		err := fmt.Errorf("hook '%s' panic: %v", name, r)
-		ctx.AddError(err)
-	}
+	return finalResult
 }

@@ -6,6 +6,26 @@ import (
 	"sync"
 )
 
+var (
+	allRegisteredHooksMu sync.RWMutex
+	allRegisteredHooks   []*HookBuilder
+)
+
+func registerGlobalHook(h *HookBuilder) {
+	allRegisteredHooksMu.Lock()
+	defer allRegisteredHooksMu.Unlock()
+	allRegisteredHooks = append(allRegisteredHooks, h)
+}
+
+func GetAllRegisteredHooks() []*HookBuilder {
+	allRegisteredHooksMu.RLock()
+	defer allRegisteredHooksMu.RUnlock()
+
+	out := make([]*HookBuilder, len(allRegisteredHooks))
+	copy(out, allRegisteredHooks)
+	return out
+}
+
 // RegisterHook 將動態定義的 Hook 註冊至 HookManager 中
 //
 // 參數：

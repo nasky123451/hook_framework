@@ -1,9 +1,7 @@
 package meta
 
 import (
-	"fmt"
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/utils"
 )
 
 type SubscriptionReminderPlugin struct{}
@@ -16,14 +14,19 @@ func (p *SubscriptionReminderPlugin) GetHookNames() []string {
 	return []string{"subscription_reminder"}
 }
 
-func (p *SubscriptionReminderPlugin) RegisterHooks(hookManager *hooks.HookManager) {
-	utils.RegisterDynamicHook(hookManager, "subscription_reminder", 10, "subscriber", func(ctx *hooks.HookContext) hooks.HookResult {
-		userID := ctx.GetEnvData("user_id")
+func (p *SubscriptionReminderPlugin) RegisterHooks(hm *hooks.HookManager) {
+	hooks.New("subscription_reminder").
+		WithDescription("Handles sending subscription reminders to users").
+		WithParamHints("user_id").
+		WithPriority(10).
+		AllowRoles("subscriber").
+		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
+			userID, _ := ctx.GetEnvData("user_id")
 
-		message := fmt.Sprintf("[SubscriptionReminderPlugin] Subscription reminder triggered for user_id = %v.\n", userID)
-		ctx.SetEnvData("approval_message", message)
-		return hooks.HookResult{Success: true}
-	})
+			//todo: 實際的訂閱提醒邏輯可以在這裡實現
+
+			return ctx.SuccessWithMessage("Subscription reminder sent for user ID %s", userID)
+		}).RegisterTo(hm)
 }
 
 func init() {

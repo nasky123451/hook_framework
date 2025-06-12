@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/utils"
 )
 
 type WelcomeEmailPlugin struct{}
@@ -18,17 +17,23 @@ func (p *WelcomeEmailPlugin) GetHookNames() []string {
 	return []string{"create_account"}
 }
 
-func (p *WelcomeEmailPlugin) RegisterHooks(hookManager *hooks.HookManager) {
-	utils.RegisterDynamicHook(hookManager, "create_account", 10, "admin", func(ctx *hooks.HookContext) hooks.HookResult {
-		email, ok := ctx.GetEnvData("email").(string)
-		if !ok || email == "" {
-			return hooks.HookResult{Error: fmt.Errorf("email is required to send welcome email")}
-		}
+func (p *WelcomeEmailPlugin) RegisterHooks(hm *hooks.HookManager) {
+	hooks.New("create_account").
+		WithDescription("Handles sending a welcome email when a new account is created").
+		WithParamHints("email").
+		WithPriority(10).
+		AllowRoles("admin").
+		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
+			email, ok := ctx.GetEnvData("email")
+			if !ok || email == "" {
+				return hooks.HookResult{Error: fmt.Errorf("email is required to send welcome email")}
+			}
 
-		message := fmt.Sprintf("Welcome email sent to %s", email)
-		ctx.SetEnvData("approval_message", message)
-		return hooks.HookResult{Success: true}
-	})
+			fmt.Println("[WelcomeEmailPlugin] Sending welcome email to:", email)
+			// todo: 實際的發送郵件邏輯可以在這裡實現
+
+			return ctx.SuccessWithMessage("Welcome email sent to %s", email)
+		}).RegisterTo(hm)
 }
 
 func init() {

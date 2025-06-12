@@ -1,6 +1,7 @@
 package hooks
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -9,13 +10,14 @@ import (
 // HookContext 定義執行 Hook 時的上下文結構
 // 分離 UserData 與 EnvData，並加入元數據、錯誤收集與停止控制
 type HookContext struct {
-	UserData   map[string]interface{} // 使用者相關資料（如角色、user_id 等）
-	EnvData    map[string]interface{} // 補充環境上下文（如 IP、裝置、語言等）
-	Metadata   HookMetadata           // 執行元資料（觸發來源、時間戳等）
-	Errors     []error                // 執行中產生的錯誤列表
-	Results    []interface{}          // 執行結果列表
-	StopSignal bool                   // 是否停止後續 Hook 執行
-	mu         sync.RWMutex           // 併發保護
+	UserData     map[string]interface{} // 使用者相關資料（如角色、user_id 等）
+	EnvData      map[string]interface{} // 補充環境上下文（如 IP、裝置、語言等）
+	Metadata     HookMetadata           // 執行元資料（觸發來源、時間戳等）
+	Errors       []error                // 執行中產生的錯誤列表
+	Results      []interface{}          // 執行結果列表
+	StopSignal   bool                   // 是否停止後續 Hook 執行
+	mu           sync.RWMutex           // 併發保護
+	executionLog []HookResult           // 執行日誌，記錄每個 Hook 的執行結果
 }
 
 // HookMetadata 用於描述 Hook 執行的額外元資訊
@@ -28,13 +30,22 @@ type HookMetadata struct {
 // NewHookContext 時初始化
 func NewHookContext(role string, extra map[string]interface{}) *HookContext {
 	return &HookContext{
-		UserData:   map[string]interface{}{"role": role},
-		EnvData:    make(map[string]interface{}),
-		Errors:     make([]error, 0),
-		Results:    make([]interface{}, 0),
-		StopSignal: false,
-		Metadata:   HookMetadata{Timestamp: time.Now()},
+		UserData:     map[string]interface{}{"role": role},
+		EnvData:      make(map[string]interface{}),
+		Errors:       make([]error, 0),
+		Results:      make([]interface{}, 0),
+		StopSignal:   false,
+		Metadata:     HookMetadata{Timestamp: time.Now()},
+		executionLog: make([]HookResult, 0),
 	}
+}
+
+func (ctx *HookContext) AddExecutionLog(name string, result HookResult) {
+	ctx.executionLog = append(ctx.executionLog, result)
+}
+
+func (ctx *HookContext) GetExecutionLog() []HookResult {
+	return ctx.executionLog
 }
 
 func (c *HookContext) Get(key string) interface{} {
@@ -110,13 +121,34 @@ func (c *HookContext) SetEnvData(key string, val interface{}) {
 }
 
 // GetEnvData 取得環境資料值
-func (c *HookContext) GetEnvData(key string) interface{} {
+func (c *HookContext) GetEnvData(key string) (interface{}, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if c.EnvData == nil {
-		return nil
+		return nil, false
 	}
-	return c.EnvData[key]
+	val, ok := c.EnvData[key]
+	return val, ok
+}
+
+// GetEnvString 回傳字串型別的環境變數
+func (c *HookContext) GetEnvString(key string) (string, bool) {
+	val, ok := c.GetEnvData(key)
+	if !ok {
+		return "", false
+	}
+	str, ok := val.(string)
+	return str, ok
+}
+
+func (c *HookContext) SuccessWithMessage(format string, args ...any) HookResult {
+	message := fmt.Sprintf(format, args...)
+	c.SetEnvData("approval_message", message)
+
+	return HookResult{
+		Success: true,
+		Message: message,
+	}
 }
 
 // AddError 新增錯誤到錯誤列表
@@ -153,4 +185,34 @@ func (c *HookContext) IsStopped() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.StopSignal
+}
+
+func (ctx *HookContext) Clone() *HookContext {
+	ctx.mu.RLock()
+	defer ctx.mu.RUnlock()
+
+	// 深拷貝 UserData
+	clonedUserData := make(map[string]interface{})
+	for k, v := range ctx.UserData {
+		clonedUserData[k] = v
+	}
+
+	// 深拷貝 EnvData
+	clonedEnvData := make(map[string]interface{})
+	for k, v := range ctx.EnvData {
+		clonedEnvData[k] = v
+	}
+
+	// 拷貝 Metadata, Errors, Results 等（依需求深淺拷貝）
+	cloned := &HookContext{
+		UserData:     clonedUserData,
+		EnvData:      clonedEnvData,
+		Metadata:     ctx.Metadata, // 若 Metadata 裡有指標欄位需另拷
+		Errors:       append([]error{}, ctx.Errors...),
+		Results:      append([]interface{}{}, ctx.Results...),
+		StopSignal:   ctx.StopSignal,
+		executionLog: append([]HookResult{}, ctx.executionLog...),
+	}
+
+	return cloned
 }

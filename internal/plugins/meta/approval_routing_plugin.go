@@ -3,7 +3,6 @@ package meta
 import (
 	"fmt"
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/utils"
 )
 
 type ApprovalRoutingPlugin struct{}
@@ -16,14 +15,21 @@ func (p *ApprovalRoutingPlugin) GetHookNames() []string {
 	return []string{"submit_report"}
 }
 
-func (p *ApprovalRoutingPlugin) RegisterHooks(hookManager *hooks.HookManager) {
-	utils.RegisterDynamicHook(hookManager, "submit_report", 10, "auditor", func(ctx *hooks.HookContext) hooks.HookResult {
-		docType, _ := ctx.GetEnvData("doc_type").(string)
+func (p *ApprovalRoutingPlugin) RegisterHooks(hm *hooks.HookManager) {
+	hooks.New("submit_report").
+		WithDescription("Handles submission of reports and routes them for approval").
+		WithParamHints("doc_type").
+		WithPriority(10).
+		AllowRoles("auditor").
+		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
+			docType, _ := ctx.GetEnvString("doc_type")
 
-		message := fmt.Sprintf("Submitted and routed document of type: %s", docType)
-		ctx.SetEnvData("approval_message", message)
-		return hooks.HookResult{Success: true}
-	})
+			fmt.Println("[ApprovalRoutingPlugin] Processing document of type:", docType)
+
+			// 實際處理邏輯
+			return ctx.SuccessWithMessage("Submitted and routed document of type: %s", docType)
+		}).
+		RegisterTo(hm)
 }
 
 func init() {

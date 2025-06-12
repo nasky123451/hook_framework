@@ -2,8 +2,6 @@ package hooks
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -170,53 +168,6 @@ func LoadAllPlugins() ([]Plugin, error) {
 		plugins = append(plugins, p)
 	}
 	return plugins, nil
-}
-
-// --------------------
-// 插件初始化：讀取資料夾檔案名稱並回傳插件名稱列表
-// --------------------
-
-// ScanPluginsFromDir 從指定目錄掃描符合條件的插件檔案名稱並回傳標準化的插件名稱
-// 注意：此函式不會自動註冊插件，只掃描檔名，真正的註冊需外部呼叫 RegisterPlugin
-func ScanPluginsFromDir(dir string) ([]string, error) {
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read plugin directory '%s': %w", dir, err)
-	}
-
-	var pluginNames []string
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		name := file.Name()
-		if strings.HasSuffix(name, "_plugin.go") {
-			pluginName := strings.TrimSuffix(name, "_plugin.go")
-			pluginNames = append(pluginNames, normalizePluginName(pluginName)+"Plugin")
-		}
-	}
-	return pluginNames, nil
-}
-
-// --------------------
-// 範例：初始化插件註冊表 (示範，需由外部呼叫)
-// --------------------
-
-// InitializePluginRegistry 從預設資料夾掃描插件檔案名稱，並回傳掃描結果
-// 不直接註冊插件，由外部依需求決定如何註冊（例如 import 對應包並呼叫 RegisterPlugin）
-func InitializePluginRegistry() ([]string, error) {
-	workingDir, err := os.Getwd()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get working directory: %w", err)
-	}
-	metaFolder := filepath.Join(workingDir, "internal/plugins/meta")
-
-	pluginNames, err := ScanPluginsFromDir(metaFolder)
-	if err != nil {
-		return nil, err
-	}
-
-	return pluginNames, nil
 }
 
 func LoadPluginsFromRegistry() ([]Plugin, error) {

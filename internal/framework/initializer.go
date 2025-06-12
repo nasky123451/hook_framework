@@ -1,13 +1,13 @@
 package framework
 
 import (
+	"fmt"
 	"hook_framework/internal/hooks"
 	"hook_framework/internal/plugins"
 	"hook_framework/pkg/utils"
-	"log"
 )
 
-func InitializeFramework() (*ClientInputProcessor, *utils.Printer, []hooks.Plugin) {
+func InitializeFramework() (*ClientInputProcessor, *utils.Printer, *hooks.HookManager, *hooks.HookGraph) {
 	printer := utils.NewPrinter()
 	env := hooks.NewHookEnvironment("system", "main")
 
@@ -19,17 +19,21 @@ func InitializeFramework() (*ClientInputProcessor, *utils.Printer, []hooks.Plugi
 		panic("No hooks registered. Ensure plugins are correctly registering hooks.")
 	}
 
-	log.Println("[InitializeFramework] Registering operation handlers.")
-	registerOperationHandlers(env)
+	// 建立 HookGraph 並定義流程鏈結
+	hg := hooks.NewHookGraph(env.HookManager)
+
+	hg.AddChain("create_account", "notify_account_created", "create_jira_task")
 
 	processor := NewClientInputProcessor(env, printer)
 
-	return processor, printer, hooks.GetRegisteredPluginTypes()
-}
+	if err := processor.Env.HookManager.GenerateHookDocs("hook_docs.md"); err != nil {
+		panic(fmt.Errorf("failed to generate hook docs: %w", err))
+	}
 
+	return processor, printer, processor.Env.HookManager, hg
+}
 func initializeHooksAndPlugins(pm *hooks.PluginManager, env *hooks.HookEnvironment) {
 	// 初始化 Hook 註冊表與 Hook 名稱
-	hooks.InitializePluginRegistry()
 	hookConfigs := plugins.GetAllHookConfigs()
 	hooks.InitializeHookNames(hookConfigs)
 
@@ -41,15 +45,4 @@ func initializeHooksAndPlugins(pm *hooks.PluginManager, env *hooks.HookEnvironme
 	}
 
 	pm.InitializePlugins(env.Context, env.HookManager)
-}
-
-func registerOperationHandlers(env *hooks.HookEnvironment) {
-	hookConfigs := plugins.GetAllHookConfigs()
-	hookNames := hooks.GetAllHookNames()
-
-	utils.RegisterAllHandlers(func(name string, handler func(ctx interface{}, params map[string]interface{})) {
-		hooks.RegisterOperationHandler(name, func(ctx *hooks.HookContext, params map[string]interface{}) {
-			handler(ctx, params)
-		})
-	}, hookNames, hookConfigs)
 }

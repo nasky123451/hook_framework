@@ -3,7 +3,6 @@ package meta
 import (
 	"fmt"
 	"hook_framework/internal/hooks"
-	"hook_framework/pkg/utils"
 )
 
 type BookingLockPlugin struct{}
@@ -16,15 +15,22 @@ func (p *BookingLockPlugin) GetHookNames() []string {
 	return []string{"book_room"}
 }
 
-func (p *BookingLockPlugin) RegisterHooks(hookManager *hooks.HookManager) {
-	utils.RegisterDynamicHook(hookManager, "book_room", 10, "employee", func(ctx *hooks.HookContext) hooks.HookResult {
-		room, _ := ctx.GetEnvData("room").(string)
-		time, _ := ctx.GetEnvData("time").(string)
+func (p *BookingLockPlugin) RegisterHooks(hm *hooks.HookManager) {
+	hooks.New("book_room").
+		WithDescription("Handles room booking and prevents conflicts in scheduling").
+		WithParamHints("room", "time").
+		WithPriority(10).
+		AllowRoles("admin", "employee").
+		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
+			room, _ := ctx.GetEnvString("room")
+			time, _ := ctx.GetEnvString("time")
 
-		message := fmt.Sprintf("Room %s booked for %s", room, time)
-		ctx.SetEnvData("approval_message", message)
-		return hooks.HookResult{Success: true}
-	})
+			fmt.Println("[BookingLockPlugin] Booking room:", room, "for time:", time)
+			// TODO: 實際的房間預訂邏輯可以在這裡實現
+
+			return ctx.SuccessWithMessage("Room %s booked for %s", room, time)
+		}).
+		RegisterTo(hm)
 }
 
 func init() {

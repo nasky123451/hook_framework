@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func PrintStats(env *hooks.HookEnvironment, printer *utils.Printer, initializedPlugins []hooks.Plugin) {
+func PrintStats(env *hooks.HookEnvironment, printer *utils.Printer) {
 	// 獲取 Hook Stats
 	commonStats, version := env.HookManager.GetStats()
 
@@ -28,4 +28,20 @@ func PrintStats(env *hooks.HookEnvironment, printer *utils.Printer, initializedP
 	printer.PrintMessage(fmt.Sprintf("Stats Version: %d", version.Version))
 	printer.PrintMessage(fmt.Sprintf("Stats Timestamp: %s", version.Timestamp.Format(time.RFC3339)))
 	printer.PrintHookStats(hookStats)
+
+	// 輸出 HookContext 詳細結果
+	printer.PrintMessage("HookContext Executions:")
+	for _, ctx := range env.HookManager.GetContexts() {
+		role, _ := ctx.GetEnvString("role")
+		for _, log := range ctx.GetExecutionLog() {
+			printer.PrintMessage(fmt.Sprintf("  Input         : %s", log.Name))
+			printer.PrintMessage(fmt.Sprintf("  Role          : %s", role))
+			printer.PrintMessage(fmt.Sprintf("  Success       : %v", log.Success))
+			printer.PrintMessage(fmt.Sprintf("  Duration (µs) : %d", log.Duration))
+			printer.PrintMessage(fmt.Sprintf("  StopExecution : %v", log.StopExecution))
+			printer.PrintMessage(fmt.Sprintf("  Error         : %v", log.Error))
+			printer.PrintMessage(fmt.Sprintf("  Message       : %s", log.Message))
+			printer.PrintMessage("---------------------------------------")
+		}
+	}
 }
