@@ -63,6 +63,7 @@ func RegisterHook(
 // dynamicHookHandler 是一個動態實現的 HookHandler，封裝了執行優先級與邏輯
 type dynamicHookHandler struct {
 	name     string
+	roles    []string
 	priority int
 	filter   func(ctx *HookContext) bool
 	run      func(ctx *HookContext) HookResult
@@ -70,6 +71,10 @@ type dynamicHookHandler struct {
 
 func (h *dynamicHookHandler) Name() string {
 	return h.name
+}
+
+func (h *dynamicHookHandler) Roles() []string {
+	return h.roles
 }
 
 func (h *dynamicHookHandler) Priority() int {

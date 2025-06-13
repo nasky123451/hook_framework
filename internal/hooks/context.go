@@ -30,17 +30,16 @@ type HookMetadata struct {
 // NewHookContext 時初始化
 func NewHookContext(role string, extra map[string]interface{}) *HookContext {
 	return &HookContext{
-		UserData:     map[string]interface{}{"role": role},
-		EnvData:      make(map[string]interface{}),
-		Errors:       make([]error, 0),
-		Results:      make([]interface{}, 0),
-		StopSignal:   false,
-		Metadata:     HookMetadata{Timestamp: time.Now()},
-		executionLog: make([]HookResult, 0),
+		UserData:   map[string]interface{}{"role": role},
+		EnvData:    make(map[string]interface{}),
+		Errors:     make([]error, 0),
+		Results:    make([]interface{}, 0),
+		StopSignal: false,
+		Metadata:   HookMetadata{Timestamp: time.Now()},
 	}
 }
 
-func (ctx *HookContext) AddExecutionLog(name string, result HookResult) {
+func (ctx *HookContext) AddExecutionLog(result HookResult) {
 	ctx.executionLog = append(ctx.executionLog, result)
 }
 
@@ -211,7 +210,7 @@ func (ctx *HookContext) Clone() *HookContext {
 		Errors:       append([]error{}, ctx.Errors...),
 		Results:      append([]interface{}{}, ctx.Results...),
 		StopSignal:   ctx.StopSignal,
-		executionLog: append([]HookResult{}, ctx.executionLog...),
+		executionLog: ctx.executionLog,
 	}
 
 	return cloned

@@ -119,14 +119,16 @@ func (hm *HookManager) GetRegisteredHooks() map[string][]string {
 // 簡單角色權限檢查範例 (可整合外部 IAM)
 func (hm *HookManager) CheckPermission(hookName string, ctx *HookContext) bool {
 	role := ctx.GetUserData("role")
-	allowedRoles, ok := hm.hookRoles[hookName]
+	hooks, ok := hm.hooks[hookName]
 	if !ok {
 		// 如果無明確設定，視為允許
 		return true
 	}
-	for _, r := range allowedRoles {
-		if r == role {
-			return true
+	for _, h := range hooks {
+		for _, r := range h.Roles() {
+			if r == role {
+				return true
+			}
 		}
 	}
 	ctx.AddError(fmt.Errorf("permission denied: role '%v' cannot execute hook '%s'", role, hookName))

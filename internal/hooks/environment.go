@@ -2,13 +2,12 @@ package hooks
 
 type HookEnvironment struct {
 	HookManager *HookManager
-	Context     *HookContext
+	Contexts    []*HookContext
 }
 
-func NewHookEnvironment(triggeredBy string, origin string) *HookEnvironment {
+func NewHookEnvironment() *HookEnvironment {
 	hookManager := NewHookManager()
 	return &HookEnvironment{
 		HookManager: hookManager,
-		Context:     NewHookContext(triggeredBy, map[string]interface{}{"origin": origin}),
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 func InitializeFramework() (*ClientInputProcessor, *utils.Printer, *hooks.HookManager, *hooks.HookGraph) {
 	printer := utils.NewPrinter()
-	env := hooks.NewHookEnvironment("system", "main")
+	env := hooks.NewHookEnvironment()
 
 	pluginManager := hooks.NewPluginManager()
 
@@ -44,5 +44,5 @@ func initializeHooksAndPlugins(pm *hooks.PluginManager, env *hooks.HookEnvironme
 		pm.RegisterPlugin(plugin)
 	}
 
-	pm.InitializePlugins(env.Context, env.HookManager)
+	pm.InitializePlugins(env.HookManager)
 }

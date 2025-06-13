@@ -23,7 +23,7 @@ func (pm *PluginManager) RegisterPlugin(plugin Plugin) {
 }
 
 // InitializePlugins 初始化所有插件
-func (pm *PluginManager) InitializePlugins(ctx *HookContext, hm *HookManager) []Plugin {
+func (pm *PluginManager) InitializePlugins(hm *HookManager) []Plugin {
 	var initializedPlugins []Plugin
 	for _, plugin := range pm.plugins {
 		plugin.RegisterHooks(hm)

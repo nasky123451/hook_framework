@@ -4,6 +4,7 @@ import "time"
 
 type HookHandler interface {
 	Name() string
+	Roles() []string
 	Priority() int
 	Filter(ctx *HookContext) bool
 	Run(ctx *HookContext) HookResult

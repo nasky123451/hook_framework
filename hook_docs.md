@@ -1,22 +1,24 @@
 # Hook Documentation
 
-Generated at: 2025-06-12T17:28:40+08:00
+Generated at: 2025-06-13T11:51:25+08:00
 
-## submit_report
-- 📄 Description: Handles submission of reports and routes them for approval
-- 🔗 Registered From: approval_routing_plugin.go:32 (meta.(*ApprovalRoutingPlugin).RegisterHooks)
+## create_invoice
+- 📄 Description: Handles invoice creation and audits the invoice details
+- 🔗 Registered From: invoice_audit_plugin.go:32 (meta.(*InvoiceAuditPlugin).RegisterHooks)
 - 👥 Allowed Roles:
-  - auditor
+  - admin
+  - finance
 - 🎯 Expected Parameters:
-  - doc_type
+  - invoice_no
+  - amount
 
-## system_monitor
-- 📄 Description: Handles system monitoring alerts
-- 🔗 Registered From: system_monitor_plugin.go:29 (meta.(*SystemMonitorPlugin).RegisterHooks)
+## subscription_reminder
+- 📄 Description: Handles sending subscription reminders to users
+- 🔗 Registered From: subscription_reminder_plugin.go:29 (meta.(*SubscriptionReminderPlugin).RegisterHooks)
 - 👥 Allowed Roles:
-  - devops
+  - subscriber
 - 🎯 Expected Parameters:
-  - server
+  - user_id
 
 ## update_username
 - 📄 Description: Handles updating a user's username
@@ -25,6 +27,36 @@ Generated at: 2025-06-12T17:28:40+08:00
   - admin
 - 🎯 Expected Parameters:
   - username
+
+## create_user
+- 📄 Description: Handles user management operations: create_user
+- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
+- 👥 Allowed Roles:
+  - admin
+- 🎯 Expected Parameters:
+  - username
+  - email
+  - new_email
+
+## update_user
+- 📄 Description: Handles user management operations: update_user
+- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
+- 👥 Allowed Roles:
+  - admin
+- 🎯 Expected Parameters:
+  - username
+  - email
+  - new_email
+
+## delete_user
+- 📄 Description: Handles user management operations: delete_user
+- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
+- 👥 Allowed Roles:
+  - admin
+- 🎯 Expected Parameters:
+  - username
+  - email
+  - new_email
 
 ## set_user_pref
 - 📄 Description: Handles setting user preferences like theme, language, etc.
@@ -50,6 +82,14 @@ Generated at: 2025-06-12T17:28:40+08:00
 - 🎯 Expected Parameters:
   - email
 
+## submit_report
+- 📄 Description: Handles submission of reports and routes them for approval
+- 🔗 Registered From: approval_routing_plugin.go:32 (meta.(*ApprovalRoutingPlugin).RegisterHooks)
+- 👥 Allowed Roles:
+  - auditor
+- 🎯 Expected Parameters:
+  - doc_type
+
 ## book_room
 - 📄 Description: Handles room booking and prevents conflicts in scheduling
 - 🔗 Registered From: booking_lock_plugin.go:33 (meta.(*BookingLockPlugin).RegisterHooks)
@@ -59,16 +99,6 @@ Generated at: 2025-06-12T17:28:40+08:00
 - 🎯 Expected Parameters:
   - room
   - time
-
-## create_invoice
-- 📄 Description: Handles invoice creation and audits the invoice details
-- 🔗 Registered From: invoice_audit_plugin.go:32 (meta.(*InvoiceAuditPlugin).RegisterHooks)
-- 👥 Allowed Roles:
-  - admin
-  - finance
-- 🎯 Expected Parameters:
-  - invoice_no
-  - amount
 
 ## set_language
 - 📄 Description: Handles setting the language for the user based on their preferences
@@ -104,40 +134,10 @@ Generated at: 2025-06-12T17:28:40+08:00
 - 🎯 Expected Parameters:
   - ip
 
-## subscription_reminder
-- 📄 Description: Handles sending subscription reminders to users
-- 🔗 Registered From: subscription_reminder_plugin.go:29 (meta.(*SubscriptionReminderPlugin).RegisterHooks)
+## system_monitor
+- 📄 Description: Handles system monitoring alerts
+- 🔗 Registered From: system_monitor_plugin.go:29 (meta.(*SystemMonitorPlugin).RegisterHooks)
 - 👥 Allowed Roles:
-  - subscriber
+  - devops
 - 🎯 Expected Parameters:
-  - user_id
-
-## create_user
-- 📄 Description: Handles user management operations: create_user
-- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
-- 👥 Allowed Roles:
-  - admin
-- 🎯 Expected Parameters:
-  - username
-  - email
-  - new_email
-
-## update_user
-- 📄 Description: Handles user management operations: update_user
-- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
-- 👥 Allowed Roles:
-  - admin
-- 🎯 Expected Parameters:
-  - username
-  - email
-  - new_email
-
-## delete_user
-- 📄 Description: Handles user management operations: delete_user
-- 🔗 Registered From: user_management_plugin.go:44 (meta.(*UserManagementPlugin).RegisterHooks)
-- 👥 Allowed Roles:
-  - admin
-- 🎯 Expected Parameters:
-  - username
-  - email
-  - new_email
+  - server

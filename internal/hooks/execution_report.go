@@ -24,14 +24,16 @@ func PrintExecutionSummary(printer *utils.Printer, env *HookEnvironment, opts Re
 	hookLogsByName := make(map[string][]*HookResult)
 
 	// 分群
-	for _, log := range env.Context.GetExecutionLog() {
-		if opts.OnlyFailed && log.Success {
-			continue
+	for _, ctx := range env.Contexts {
+		for _, log := range ctx.GetExecutionLog() {
+			if opts.OnlyFailed && log.Success {
+				continue
+			}
+			if len(opts.FilterHookNames) > 0 && !contains(opts.FilterHookNames, log.Name) {
+				continue
+			}
+			hookLogsByName[log.Name] = append(hookLogsByName[log.Name], &log)
 		}
-		if len(opts.FilterHookNames) > 0 && !contains(opts.FilterHookNames, log.Name) {
-			continue
-		}
-		hookLogsByName[log.Name] = append(hookLogsByName[log.Name], &log)
 	}
 
 	// 終端輸出

@@ -27,43 +27,47 @@ func NewClientInputProcessor(env *hooks.HookEnvironment, printer *utils.Printer)
 func (p *ClientInputProcessor) Process(clientInput ClientInput, h *hooks.HookManager) {
 	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
 
-	p.Env.Context.Reset()
+	context := hooks.NewHookContext("system", map[string]interface{}{"origin": "main"})
+	context.Reset()
 
-	p.Env.Context.SetUserData("role", clientInput.Role)
-	p.Env.Context.SetEnvData("role", clientInput.Role)
+	context.SetUserData("role", clientInput.Role)
+	context.SetEnvData("role", clientInput.Role)
 
 	for k, v := range clientInput.Context {
-		p.Env.Context.SetEnvData(k, v)
+		context.SetEnvData(k, v)
 	}
 
 	if p.Env.HookManager != nil {
-		if err := h.Execute(clientInput.Input, p.Env.Context, false); err != nil {
+		if err := h.Execute(clientInput.Input, context, false); err != nil {
 			p.Printer.PrintError(fmt.Errorf("Hook execution error: %w", err))
 		}
 	}
 
-	p.PrintResult(p.Env.Context)
+	p.PrintResult(context)
+	p.Env.Contexts = append(p.Env.Contexts, context)
 }
 
 func (p *ClientInputProcessor) ProcessWithGraph(clientInput ClientInput, hg *hooks.HookGraph) {
 	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
 
-	p.Env.Context.Reset()
+	context := hooks.NewHookContext("system", map[string]interface{}{"origin": "main"})
+	context.Reset()
 
-	p.Env.Context.SetUserData("role", clientInput.Role)
-	p.Env.Context.SetEnvData("role", clientInput.Role)
+	context.SetUserData("role", clientInput.Role)
+	context.SetEnvData("role", clientInput.Role)
 
 	for k, v := range clientInput.Context {
-		p.Env.Context.SetEnvData(k, v)
+		context.SetEnvData(k, v)
 	}
 
 	if p.Env.HookManager != nil {
-		if err := hg.Execute(clientInput.Input, p.Env.Context); err != nil {
+		if err := hg.Execute(clientInput.Input, context); err != nil {
 			p.Printer.PrintError(fmt.Errorf("HookGraph execution error: %w", err))
 		}
 	}
 
-	p.PrintResult(p.Env.Context)
+	p.PrintResult(context)
+	p.Env.Contexts = append(p.Env.Contexts, context)
 }
 
 func (p *ClientInputProcessor) PrintResult(ctx *hooks.HookContext) {
