@@ -16,20 +16,27 @@ func (p *InvoiceAuditPlugin) GetHookNames() []string {
 }
 
 func (p *InvoiceAuditPlugin) RegisterHooks(hm *hooks.HookManager) {
-	hooks.New("create_invoice").
-		WithDescription("Handles invoice creation and audits the invoice details").
-		WithParamHints("invoice_no", "amount").
-		WithPriority(10).
-		AllowRoles("admin", "finance").
-		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
-			invoiceNo, _ := ctx.GetEnvData("invoice_no")
-			amount, _ := ctx.GetEnvData("amount")
+	hookDefs := hooks.HookBuilders{
+		{HookName: "create_invoice",
+			Description: "Handles invoice creation and audits the invoice details",
+			ParamHints:  []string{"invoice_no", "amount"},
+			Roles:       []string{"admin", "finance"},
+			Priority:    10,
+			Handler:     handleCreateInvoice,
+		},
+	}
 
-			fmt.Printf("[InvoiceAuditPlugin] Auditing invoice: %s with amount: %s\n", invoiceNo, amount)
-			// todo: 實際的審核邏輯可以在這裡實現
+	hookDefs.RegisterHookDefinitions(hm, p.Name())
+}
 
-			return ctx.SuccessWithMessage("Invoice %s audited successfully with amount %s", invoiceNo, amount)
-		}).RegisterTo(hm)
+func handleCreateInvoice(ctx *hooks.HookContext) hooks.HookResult {
+	invoiceNo, _ := ctx.GetEnvString("invoice_no")
+	amount, _ := ctx.GetEnvString("amount")
+
+	fmt.Printf("[InvoiceAuditPlugin] Auditing invoice: %s with amount: %s\n", invoiceNo, amount)
+	// 實際的審核邏輯可以在這裡實現
+
+	return ctx.SuccessWithMessage("Invoice %s audited successfully with amount %s", invoiceNo, amount)
 }
 
 func init() {

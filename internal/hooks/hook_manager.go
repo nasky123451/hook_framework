@@ -151,9 +151,9 @@ func (hm *HookManager) GenerateHookDocs(path string) error {
 			fmt.Sprintf("- 🔗 Registered From: %s", h.RegisteredFrom),
 		)
 
-		if len(h.roles) > 0 {
+		if len(h.Roles) > 0 {
 			lines = append(lines, "- 👥 Allowed Roles:")
-			for _, r := range h.roles {
+			for _, r := range h.Roles {
 				lines = append(lines, fmt.Sprintf("  - %s", r))
 			}
 		}

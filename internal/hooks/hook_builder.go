@@ -11,16 +11,20 @@ type HookBuilder struct {
 	Description    string
 	ParamHints     []string
 	RegisteredFrom string
-	priority       int
-	roles          []string
-	metadata       map[string]interface{}
-	handler        HookHandlerFunc
+	Priority       int
+	Roles          []string
+	Metadata       map[string]interface{}
+	Handler        HookHandlerFunc
 }
+
+type HookBuilders []*HookBuilder
+
+var registeredMetadata = make([]HookMetadata, 0)
 
 func New(name string) *HookBuilder {
 	h := &HookBuilder{
 		HookName: name,
-		metadata: make(map[string]interface{}),
+		Metadata: make(map[string]interface{}),
 	}
 	registerGlobalHook(h)
 	return h
@@ -37,23 +41,36 @@ func (h *HookBuilder) WithParamHints(params ...string) *HookBuilder {
 }
 
 func (b *HookBuilder) WithPriority(p int) *HookBuilder {
-	b.priority = p
+	b.Priority = p
 	return b
 }
 
 func (b *HookBuilder) AllowRoles(roles ...string) *HookBuilder {
-	b.roles = append(b.roles, roles...)
+	b.Roles = append(b.Roles, roles...)
 	return b
 }
 
 func (b *HookBuilder) WithMetadata(key string, val interface{}) *HookBuilder {
-	b.metadata[key] = val
+	b.Metadata[key] = val
 	return b
 }
 
 func (b *HookBuilder) Handle(fn HookHandlerFunc) *HookBuilder {
-	b.handler = fn
+	b.Handler = fn
 	return b
+}
+
+func (bs *HookBuilders) RegisterHookDefinitions(hm *HookManager, pluginName string) {
+	for _, b := range *bs {
+		New(b.HookName).
+			WithDescription(b.Description).
+			WithParamHints(b.ParamHints...).
+			WithPriority(b.Priority).
+			AllowRoles(b.Roles...).
+			WithMetadata("plugin", pluginName).
+			Handle(b.Handler).
+			RegisterTo(hm)
+	}
 }
 
 func (b *HookBuilder) RegisterTo(hm *HookManager) {
@@ -63,9 +80,47 @@ func (b *HookBuilder) RegisterTo(hm *HookManager) {
 		b.RegisteredFrom = fmt.Sprintf("%s:%d (%s)", filepath.Base(file), line, filepath.Base(funcName))
 	}
 
+	registeredMetadata = append(registeredMetadata, HookMetadata{
+		Name:        b.HookName,
+		Description: b.Description,
+		ParamHints:  b.ParamHints,
+		Roles:       b.Roles,
+	})
+
 	hm.RegisterHookWithOptions(b.HookName, HookOptions{
-		Priority: b.priority,
-		Roles:    b.roles,
-		Metadata: b.metadata,
-	}, b.handler)
+		Priority: b.Priority,
+		Roles:    b.Roles,
+		Metadata: b.Metadata,
+	}, b.Handler)
+}
+
+func GetFormattedHookDescriptions() []string {
+	var lines []string
+	for _, meta := range registeredMetadata {
+		// 動態構造 context
+		contextParts := ""
+		for i, param := range meta.ParamHints {
+			if i > 0 {
+				contextParts += ", "
+			}
+			contextParts += fmt.Sprintf("\"%s\": \"xxx\"", param)
+		}
+
+		role := "unknown"
+		if len(meta.Roles) > 0 {
+			role = meta.Roles[0]
+		}
+
+		lines = append(lines, fmt.Sprintf(
+			`🔹 [%s] %s
+  - Description: %s
+  - Roles: %v
+  - Example: {Input: "%s", Role: "%s", Context: map[string]interface{}{%s}}`,
+			meta.Plugin, meta.Name,
+			meta.Description,
+			meta.Roles,
+			meta.Name, role, contextParts,
+		))
+	}
+	return lines
 }

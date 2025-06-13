@@ -16,20 +16,25 @@ func (p *ApprovalRoutingPlugin) GetHookNames() []string {
 }
 
 func (p *ApprovalRoutingPlugin) RegisterHooks(hm *hooks.HookManager) {
-	hooks.New("submit_report").
-		WithDescription("Handles submission of reports and routes them for approval").
-		WithParamHints("doc_type").
-		WithPriority(10).
-		AllowRoles("auditor").
-		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
-			docType, _ := ctx.GetEnvString("doc_type")
+	hookDefs := hooks.HookBuilders{
+		{
+			HookName:    "submit_report",
+			Description: "Handles submission of reports and routes them for approval",
+			ParamHints:  []string{"doc_type"},
+			Roles:       []string{"auditor"},
+			Priority:    10,
+			Handler:     handleSubmitReport,
+		},
+	}
 
-			fmt.Println("[ApprovalRoutingPlugin] Processing document of type:", docType)
+	hookDefs.RegisterHookDefinitions(hm, p.Name())
+}
 
-			// 實際處理邏輯
-			return ctx.SuccessWithMessage("Submitted and routed document of type: %s", docType)
-		}).
-		RegisterTo(hm)
+func handleSubmitReport(ctx *hooks.HookContext) hooks.HookResult {
+	docType, _ := ctx.GetEnvString("doc_type")
+	fmt.Println("[ApprovalRoutingPlugin] Processing document of type:", docType)
+	// 實際處理邏輯
+	return ctx.SuccessWithMessage("Submitted and routed document of type: %s", docType)
 }
 
 func init() {

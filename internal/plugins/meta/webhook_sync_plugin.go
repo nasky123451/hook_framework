@@ -16,19 +16,26 @@ func (p *WebhookSyncPlugin) GetHookNames() []string {
 }
 
 func (p *WebhookSyncPlugin) RegisterHooks(hm *hooks.HookManager) {
-	hooks.New("webhook_sync").
-		WithDescription("Handles synchronization of webhooks from external sources").
-		WithParamHints("source").
-		WithPriority(10).
-		AllowRoles("integration").
-		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
-			source, _ := ctx.GetEnvData("source")
+	hookDefs := hooks.HookBuilders{
+		{HookName: "webhook_sync",
+			Description: "Handles synchronization of webhooks from external sources",
+			ParamHints:  []string{"source"},
+			Roles:       []string{"integration"},
+			Priority:    10,
+			Handler:     handleWebhookSync,
+		},
+	}
 
-			fmt.Printf("[WebhookSyncPlugin] Syncing webhooks from source: %s\n", source)
-			//todo: 實際的 webhook 同步邏輯可以在這裡實現
+	hookDefs.RegisterHookDefinitions(hm, p.Name())
+}
 
-			return ctx.SuccessWithMessage("Webhook sync completed successfully")
-		}).RegisterTo(hm)
+func handleWebhookSync(ctx *hooks.HookContext) hooks.HookResult {
+	source, _ := ctx.GetEnvData("source")
+
+	fmt.Printf("[WebhookSyncPlugin] Syncing webhooks from source: %s\n", source)
+	// 實際的 webhook 同步邏輯可以在這裡實現
+
+	return ctx.SuccessWithMessage("Webhook sync completed successfully")
 }
 
 func init() {

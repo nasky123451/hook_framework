@@ -15,18 +15,25 @@ func (p *SubscriptionReminderPlugin) GetHookNames() []string {
 }
 
 func (p *SubscriptionReminderPlugin) RegisterHooks(hm *hooks.HookManager) {
-	hooks.New("subscription_reminder").
-		WithDescription("Handles sending subscription reminders to users").
-		WithParamHints("user_id").
-		WithPriority(10).
-		AllowRoles("subscriber").
-		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
-			userID, _ := ctx.GetEnvData("user_id")
+	hookDefs := hooks.HookBuilders{
+		{HookName: "subscription_reminder",
+			Description: "Handles sending subscription reminders to users",
+			ParamHints:  []string{"user_id"},
+			Roles:       []string{"subscriber"},
+			Priority:    10,
+			Handler:     handleSubscriptionReminder,
+		},
+	}
 
-			//todo: 實際的訂閱提醒邏輯可以在這裡實現
+	hookDefs.RegisterHookDefinitions(hm, p.Name())
+}
 
-			return ctx.SuccessWithMessage("Subscription reminder sent for user ID %s", userID)
-		}).RegisterTo(hm)
+func handleSubscriptionReminder(ctx *hooks.HookContext) hooks.HookResult {
+	userID, _ := ctx.GetEnvData("user_id")
+
+	// 實際的訂閱提醒邏輯可以在這裡實現
+
+	return ctx.SuccessWithMessage("Subscription reminder sent for user ID %s", userID)
 }
 
 func init() {

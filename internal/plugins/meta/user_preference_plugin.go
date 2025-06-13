@@ -16,19 +16,27 @@ func (p *UserPreferencePlugin) GetHookNames() []string {
 }
 
 func (p *UserPreferencePlugin) RegisterHooks(hm *hooks.HookManager) {
-	hooks.New("set_user_pref").
-		WithDescription("Handles setting user preferences like theme, language, etc.").
-		WithParamHints("theme").
-		WithPriority(10).
-		AllowRoles("user").
-		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
-			theme, _ := ctx.GetEnvString("theme")
+	hookDefs := hooks.HookBuilders{
+		{HookName: "set_user_pref",
+			Description: "Handles setting user preferences like theme, language, etc.",
+			ParamHints:  []string{"theme"},
+			Roles:       []string{"user"},
+			Priority:    10,
+			Handler:     handleSetUserPreference,
+		},
+	}
 
-			fmt.Println("[UserPreferencePlugin] Setting user preference for theme:", theme)
-			// todo: 實際的用戶偏好設置邏輯可以在這裡實現
+	hookDefs.RegisterHookDefinitions(hm, p.Name())
 
-			return ctx.SuccessWithMessage("User preference updated successfully")
-		}).RegisterTo(hm)
+}
+
+func handleSetUserPreference(ctx *hooks.HookContext) hooks.HookResult {
+	theme, _ := ctx.GetEnvString("theme")
+
+	fmt.Println("[UserPreferencePlugin] Setting user preference for theme:", theme)
+	// 實際的用戶偏好設置邏輯可以在這裡實現
+
+	return ctx.SuccessWithMessage("User preference updated successfully")
 }
 
 func init() {

@@ -7,7 +7,7 @@ import (
 	"hook_framework/internal/utils"
 )
 
-func InitializeFramework() (*ClientInputProcessor, *utils.Printer, *hooks.HookManager, *hooks.HookGraph) {
+func InitializeFramework() *ClientInputProcessor {
 	printer := utils.NewPrinter()
 	env := hooks.NewHookEnvironment()
 
@@ -19,10 +19,7 @@ func InitializeFramework() (*ClientInputProcessor, *utils.Printer, *hooks.HookMa
 		panic("No hooks registered. Ensure plugins are correctly registering hooks.")
 	}
 
-	// 建立 HookGraph 並定義流程鏈結
-	hg := hooks.NewHookGraph(env.HookManager)
-
-	hg.AddChain("create_account", "notify_account_created", "create_jira_task")
+	env.HookGraph.AddChain("create_account", "notify_account_created", "create_jira_task")
 
 	processor := NewClientInputProcessor(env, printer)
 
@@ -30,7 +27,7 @@ func InitializeFramework() (*ClientInputProcessor, *utils.Printer, *hooks.HookMa
 		panic(fmt.Errorf("failed to generate hook docs: %w", err))
 	}
 
-	return processor, printer, processor.Env.HookManager, hg
+	return processor
 }
 func initializeHooksAndPlugins(pm *hooks.PluginManager, env *hooks.HookEnvironment) {
 	// 初始化 Hook 註冊表與 Hook 名稱

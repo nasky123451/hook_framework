@@ -15,34 +15,58 @@ func (p *UserManagementPlugin) GetHookNames() []string {
 }
 
 func (p *UserManagementPlugin) RegisterHooks(hm *hooks.HookManager) {
-	handlers := map[string]func(ctx *hooks.HookContext) hooks.HookResult{
-		"create_user": func(ctx *hooks.HookContext) hooks.HookResult {
-			username, _ := ctx.GetEnvString("username")
-			email, _ := ctx.GetEnvString("email")
-
-			return ctx.SuccessWithMessage("User %s created with email %s", username, email)
+	hookDefs := hooks.HookBuilders{
+		{HookName: "create_user",
+			Description: "Creates a new user with a username and email",
+			ParamHints:  []string{"username", "email"},
+			Roles:       []string{"admin"},
+			Priority:    10,
+			Handler:     handleCreateUser,
 		},
-		"update_user": func(ctx *hooks.HookContext) hooks.HookResult {
-			username, _ := ctx.GetEnvString("username")
-			newEmail, _ := ctx.GetEnvString("new_email")
-
-			return ctx.SuccessWithMessage("User %s updated to new email %s", username, newEmail)
+		{HookName: "update_user",
+			Description: "Updates a user's email address",
+			ParamHints:  []string{"username", "new_email"},
+			Roles:       []string{"admin"},
+			Priority:    10,
+			Handler:     handleUpdateUser,
 		},
-		"delete_user": func(ctx *hooks.HookContext) hooks.HookResult {
-			username, _ := ctx.GetEnvString("username")
-
-			return ctx.SuccessWithMessage("User %s deleted successfully", username)
+		{HookName: "delete_user",
+			Description: "Deletes a user by username",
+			ParamHints:  []string{"username"},
+			Roles:       []string{"admin"},
+			Priority:    10,
+			Handler:     handleDeleteUser,
 		},
 	}
 
-	for hookName, handler := range handlers {
-		hooks.New(hookName).
-			WithDescription("Handles user management operations: "+hookName).
-			WithParamHints("username", "email", "new_email").
-			WithPriority(10).
-			AllowRoles("admin").
-			Handle(handler).RegisterTo(hm)
-	}
+	hookDefs.RegisterHookDefinitions(hm, p.Name())
+}
+
+func handleCreateUser(ctx *hooks.HookContext) hooks.HookResult {
+	username, _ := ctx.GetEnvString("username")
+	email, _ := ctx.GetEnvString("email")
+
+	// 實際的用戶創建邏輯可以在這裡實現
+	// 例如，將用戶信息存儲到數據庫中
+
+	return ctx.SuccessWithMessage("User %s created with email %s", username, email)
+}
+
+func handleUpdateUser(ctx *hooks.HookContext) hooks.HookResult {
+	username, _ := ctx.GetEnvString("username")
+	newEmail, _ := ctx.GetEnvString("new_email")
+
+	// 實際的用戶更新邏輯可以在這裡實現
+	// 例如，更新數據庫中的用戶電子郵件地址
+
+	return ctx.SuccessWithMessage("User %s updated to new email %s", username, newEmail)
+}
+
+func handleDeleteUser(ctx *hooks.HookContext) hooks.HookResult {
+	username, _ := ctx.GetEnvString("username")
+	// 實際的用戶刪除邏輯可以在這裡實現
+	// 例如，從數據庫中刪除用戶
+	return ctx.SuccessWithMessage("User %s deleted successfully", username)
 }
 
 func init() {

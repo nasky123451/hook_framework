@@ -25,6 +25,12 @@ type HookMetadata struct {
 	TriggeredBy string    // 觸發 Hook 的來源（如 Plugin 名稱）
 	Origin      string    // 事件原點（如 API、系統）
 	Timestamp   time.Time // 觸發時間
+
+	Name        string   // Hook 的名稱
+	Description string   // Hook 的描述
+	Roles       []string // 可執行的角色列表（若為 nil 表示允許全部）
+	ParamHints  []string // 參數提示（如類型、範例值等）
+	Plugin      string   // 所屬插件名稱
 }
 
 // NewHookContext 時初始化

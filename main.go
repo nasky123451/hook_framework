@@ -1,14 +1,20 @@
 package main
 
 import (
+	"fmt"
 	flowtest "hook_framework/flow_test"
 	"hook_framework/internal/framework"
+	"hook_framework/internal/hooks"
 	"log"
 )
 
 func main() {
 	// 初始化框架
-	processor, printer, h, hg := framework.InitializeFramework()
+	processor := framework.InitializeFramework()
+
+	for _, line := range hooks.GetFormattedHookDescriptions() {
+		fmt.Println(line)
+	}
 
 	clientInputs := []framework.ClientInput{
 		{Input: "create_account", Role: "admin", Context: map[string]interface{}{"email": "new_user@example.com"}},
@@ -27,7 +33,7 @@ func main() {
 	}
 
 	for _, input := range clientInputs {
-		processor.Process(input, h)
+		processor.Process(input)
 	}
 
 	clientInputs = []framework.ClientInput{
@@ -36,7 +42,7 @@ func main() {
 	}
 
 	for _, input := range clientInputs {
-		processor.ProcessWithGraph(input, hg)
+		processor.ProcessWithGraph(input)
 	}
 
 	err := flowtest.RunCreateAccountFlow("new_user@example.com")
@@ -45,5 +51,5 @@ func main() {
 	}
 
 	// 輸出 Hook Stats
-	framework.PrintStats(processor.Env, printer)
+	processor.PrintStats()
 }

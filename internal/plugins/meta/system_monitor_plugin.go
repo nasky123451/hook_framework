@@ -15,18 +15,25 @@ func (p *SystemMonitorPlugin) GetHookNames() []string {
 }
 
 func (p *SystemMonitorPlugin) RegisterHooks(hm *hooks.HookManager) {
-	hooks.New("system_monitor").
-		WithDescription("Handles system monitoring alerts").
-		WithParamHints("server").
-		WithPriority(10).
-		AllowRoles("devops").
-		Handle(func(ctx *hooks.HookContext) hooks.HookResult {
-			server, _ := ctx.GetEnvData("server")
+	hookDefs := hooks.HookBuilders{
+		{HookName: "system_monitor",
+			Description: "Handles system monitoring alerts",
+			ParamHints:  []string{"server"},
+			Roles:       []string{"devops"},
+			Priority:    10,
+			Handler:     handleSystemMonitor,
+		},
+	}
 
-			//todo: 實際的監控邏輯可以在這裡實現
+	hookDefs.RegisterHookDefinitions(hm, p.Name())
+}
 
-			return ctx.SuccessWithMessage("Monitoring alert on server: %s", server)
-		}).RegisterTo(hm)
+func handleSystemMonitor(ctx *hooks.HookContext) hooks.HookResult {
+	server, _ := ctx.GetEnvData("server")
+
+	// 實際的監控邏輯可以在這裡實現
+
+	return ctx.SuccessWithMessage("Monitoring alert on server: %s", server)
 }
 
 func init() {
