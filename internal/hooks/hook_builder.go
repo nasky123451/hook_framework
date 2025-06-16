@@ -12,7 +12,7 @@ type HookBuilder struct {
 	ParamHints     []string
 	RegisteredFrom string
 	Priority       int
-	Roles          []string
+	Permissions    string
 	Metadata       map[string]interface{}
 	Handler        HookHandlerFunc
 }
@@ -45,8 +45,8 @@ func (b *HookBuilder) WithPriority(p int) *HookBuilder {
 	return b
 }
 
-func (b *HookBuilder) AllowRoles(roles ...string) *HookBuilder {
-	b.Roles = append(b.Roles, roles...)
+func (b *HookBuilder) AllowPermissions(permission string) *HookBuilder {
+	b.Permissions = permission
 	return b
 }
 
@@ -66,7 +66,7 @@ func (bs *HookBuilders) RegisterHookDefinitions(hm *HookManager, pluginName stri
 			WithDescription(b.Description).
 			WithParamHints(b.ParamHints...).
 			WithPriority(b.Priority).
-			AllowRoles(b.Roles...).
+			AllowPermissions(b.Permissions).
 			WithMetadata("plugin", pluginName).
 			Handle(b.Handler).
 			RegisterTo(hm)
@@ -84,13 +84,13 @@ func (b *HookBuilder) RegisterTo(hm *HookManager) {
 		Name:        b.HookName,
 		Description: b.Description,
 		ParamHints:  b.ParamHints,
-		Roles:       b.Roles,
+		Permissions: b.Permissions,
 	})
 
 	hm.RegisterHookWithOptions(b.HookName, HookOptions{
-		Priority: b.Priority,
-		Roles:    b.Roles,
-		Metadata: b.Metadata,
+		Priority:    b.Priority,
+		Permissions: b.Permissions,
+		Metadata:    b.Metadata,
 	}, b.Handler)
 }
 
@@ -106,20 +106,17 @@ func GetFormattedHookDescriptions() []string {
 			contextParts += fmt.Sprintf("\"%s\": \"xxx\"", param)
 		}
 
-		role := "unknown"
-		if len(meta.Roles) > 0 {
-			role = meta.Roles[0]
-		}
+		permissions := meta.Permissions
 
 		lines = append(lines, fmt.Sprintf(
 			`🔹 [%s] %s
   - Description: %s
-  - Roles: %v
-  - Example: {Input: "%s", Role: "%s", Context: map[string]interface{}{%s}}`,
+  - Permissions: %v
+  - Example: {Input: "%s", Permissions: "%s", Context: map[string]interface{}{%s}}`,
 			meta.Plugin, meta.Name,
 			meta.Description,
-			meta.Roles,
-			meta.Name, role, contextParts,
+			meta.Permissions,
+			meta.Name, permissions, contextParts,
 		))
 	}
 	return lines

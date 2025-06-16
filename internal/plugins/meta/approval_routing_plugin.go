@@ -21,7 +21,7 @@ func (p *ApprovalRoutingPlugin) RegisterHooks(hm *hooks.HookManager) {
 			HookName:    "submit_report",
 			Description: "Handles submission of reports and routes them for approval",
 			ParamHints:  []string{"doc_type"},
-			Roles:       []string{"auditor"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleSubmitReport,
 		},

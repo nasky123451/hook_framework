@@ -1,0 +1,12 @@
+{
+    "superadmin": [],
+    "admin": ["auditor", "finance", "security", "devops"],
+    "auditor": ["employee"],
+    "finance": ["employee"],
+    "security": ["employee"],
+    "devops": ["integration"],
+    "integration": ["employee"],
+    "employee": ["user"],
+    "user": ["subscriber"],
+    "subscriber": []
+  }

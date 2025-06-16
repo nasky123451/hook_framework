@@ -19,7 +19,7 @@ func (p *SecurityAlertPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "login_failure_alert",
 			Description: "Handles security alerts for login failures",
 			ParamHints:  []string{"ip"},
-			Roles:       []string{"security"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleLoginFailureAlert,
 		},

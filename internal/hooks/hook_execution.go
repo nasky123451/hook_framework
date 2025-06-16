@@ -8,9 +8,14 @@ import (
 
 func (hm *HookManager) Execute(name string, ctx *HookContext, async bool) error {
 
-	// 權限檢查（基於 ctx 的 role）
-	if !hm.CheckPermission(name, ctx) {
-		return fmt.Errorf("permission denied for hook %s and role %s", name, ctx.GetUserData("role"))
+	handlers := hm.GetHookDefinitionByName(name)
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	if !hm.CheckPermissions(ctx, handlers) {
+		role := ctx.GetUserData("permissions")
+		return fmt.Errorf("permission denied for hook %s and role %v", name, role)
 	}
 
 	result := hm.ExecuteHookByName(name, ctx)
@@ -45,7 +50,7 @@ func (hm *HookManager) ExecuteHookByName(name string, ctx *HookContext) HookResu
 	})
 
 	var finalResult HookResult
-	finalResult.Role = ctx.EnvData["role"].(string)
+	finalResult.Permissions = ctx.EnvData["permissions"].(string)
 	finalResult.Name = name
 	finalResult.Success = true
 
@@ -66,9 +71,9 @@ func (hm *HookManager) ExecuteHookByName(name string, ctx *HookContext) HookResu
 			break
 		}
 	}
-	finalResult.Duration = time.Since(start)
-
 	duration := time.Since(start)
+	finalResult.Duration = duration
+
 	hm.updateStats(name, duration, HookResult{
 		StopExecution: ctx.IsStopped(),
 		Error:         nil,

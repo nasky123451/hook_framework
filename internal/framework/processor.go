@@ -8,9 +8,9 @@ import (
 )
 
 type ClientInput struct {
-	Input   string
-	Role    string
-	Context map[string]interface{}
+	Input       string
+	Permissions string
+	Context     map[string]interface{}
 }
 
 type ClientInputProcessor struct {
@@ -27,13 +27,13 @@ func NewClientInputProcessor(env *hooks.HookEnvironment, printer *utils.Printer)
 }
 
 func (p *ClientInputProcessor) Process(clientInput ClientInput) {
-	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
+	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Permissions: %s)", clientInput.Input, clientInput.Permissions))
 
 	context := hooks.NewHookContext("system", map[string]interface{}{"origin": "main"})
 	context.Reset()
 
-	context.SetUserData("role", clientInput.Role)
-	context.SetEnvData("role", clientInput.Role)
+	context.SetUserData("permissions", clientInput.Permissions)
+	context.SetEnvData("permissions", clientInput.Permissions)
 
 	for k, v := range clientInput.Context {
 		context.SetEnvData(k, v)
@@ -46,17 +46,17 @@ func (p *ClientInputProcessor) Process(clientInput ClientInput) {
 	}
 
 	p.PrintResult(context)
-	p.Env.Contexts = append(p.Env.Contexts, context)
+	p.Env.ContextManager.Add(context, clientInput.Input)
 }
 
 func (p *ClientInputProcessor) ProcessWithGraph(clientInput ClientInput) {
-	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Role))
+	p.Printer.PrintSection(fmt.Sprintf("Simulating Input: %s (Role: %s)", clientInput.Input, clientInput.Permissions))
 
 	context := hooks.NewHookContext("system", map[string]interface{}{"origin": "main"})
 	context.Reset()
 
-	context.SetUserData("role", clientInput.Role)
-	context.SetEnvData("role", clientInput.Role)
+	context.SetUserData("permissions", clientInput.Permissions)
+	context.SetEnvData("permissions", clientInput.Permissions)
 
 	for k, v := range clientInput.Context {
 		context.SetEnvData(k, v)
@@ -69,7 +69,7 @@ func (p *ClientInputProcessor) ProcessWithGraph(clientInput ClientInput) {
 	}
 
 	p.PrintResult(context)
-	p.Env.Contexts = append(p.Env.Contexts, context)
+	p.Env.ContextManager.Add(context, clientInput.Input)
 }
 
 func (p *ClientInputProcessor) PrintResult(ctx *hooks.HookContext) {

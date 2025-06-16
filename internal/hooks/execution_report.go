@@ -24,15 +24,20 @@ func PrintExecutionSummary(printer *utils.Printer, env *HookEnvironment, opts Re
 	hookLogsByName := make(map[string][]*HookResult)
 
 	// 分群
-	for _, ctx := range env.Contexts {
-		for _, log := range ctx.GetExecutionLog() {
-			if opts.OnlyFailed && log.Success {
-				continue
+	for _, wrappers := range env.ContextManager.contexts {
+		for _, wrapper := range wrappers {
+			logs := wrapper.Context.GetExecutionLog()
+			for _, log := range logs {
+				if opts.OnlyFailed && log.Success {
+					continue
+				}
+				if len(opts.FilterHookNames) > 0 && !contains(opts.FilterHookNames, log.Name) {
+					continue
+				}
+				// 注意這裡是取址 &log，要先轉成變數避免 range 變動造成所有指標相同
+				logCopy := log
+				hookLogsByName[log.Name] = append(hookLogsByName[log.Name], &logCopy)
 			}
-			if len(opts.FilterHookNames) > 0 && !contains(opts.FilterHookNames, log.Name) {
-				continue
-			}
-			hookLogsByName[log.Name] = append(hookLogsByName[log.Name], &log)
 		}
 	}
 
@@ -44,12 +49,12 @@ func PrintExecutionSummary(printer *utils.Printer, env *HookEnvironment, opts Re
 		printer.PrintMessage(strings.Repeat("=", 40))
 		for _, log := range logs {
 			t := log.DateTime.Format("2006-01-02 15:04:05")
-			role := log.Role
+			permissions := log.Permissions
 			colorizer := color.New(color.FgGreen)
 			if !log.Success {
 				colorizer = color.New(color.FgRed)
 			}
-			printer.PrintMessage(colorizer.Sprintf("  [%s] %s | Success: %v | Duration: %dµs", t, role, log.Success, log.Duration))
+			printer.PrintMessage(colorizer.Sprintf("  [%s] %s | Success: %v | Duration: %v", t, permissions, log.Success, log.Duration))
 			printer.PrintMessage("    Message:" + log.Message)
 			if log.Error != nil {
 				printer.PrintMessage("    Error  :" + log.Error.Error())
@@ -68,8 +73,8 @@ func PrintExecutionSummary(printer *utils.Printer, env *HookEnvironment, opts Re
 				lines = append(lines,
 					fmt.Sprintf("- 🕒 Time: `%s`", log.DateTime.Format(time.RFC3339)),
 					fmt.Sprintf("- ✅ Success: `%v`", log.Success),
-					fmt.Sprintf("- ⏱ Duration: `%dµs`", log.Duration),
-					fmt.Sprintf("- 👤 Role: `%s`", log.Role),
+					fmt.Sprintf("- ⏱ Duration: `%v`", log.Duration),
+					fmt.Sprintf("- 👤 Permissions: `%s`", log.Permissions),
 					fmt.Sprintf("- 💬 Message: %s", log.Message),
 				)
 				if log.Error != nil {

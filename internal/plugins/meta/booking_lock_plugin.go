@@ -20,7 +20,7 @@ func (p *BookingLockPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "book_room",
 			Description: "Handles room booking and prevents conflicts in scheduling",
 			ParamHints:  []string{"room", "time"},
-			Roles:       []string{"admin", "employee"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleBookRoom,
 		},

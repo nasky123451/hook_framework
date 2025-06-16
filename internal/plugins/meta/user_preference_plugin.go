@@ -20,7 +20,7 @@ func (p *UserPreferencePlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "set_user_pref",
 			Description: "Handles setting user preferences like theme, language, etc.",
 			ParamHints:  []string{"theme"},
-			Roles:       []string{"user"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleSetUserPreference,
 		},

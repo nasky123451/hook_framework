@@ -4,14 +4,14 @@ import "time"
 
 type HookHandler interface {
 	Name() string
-	Roles() []string
+	Permissions() string
 	Priority() int
 	Filter(ctx *HookContext) bool
 	Run(ctx *HookContext) HookResult
 }
 
 type HookResult struct {
-	Role          string
+	Permissions   string
 	Name          string
 	Success       bool
 	Duration      time.Duration

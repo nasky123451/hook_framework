@@ -23,7 +23,7 @@ func (p *WelcomeEmailPlugin) RegisterHooks(hm *hooks.HookManager) {
 			HookName:    "create_account",
 			Description: "Handles sending a welcome email when a new account is created",
 			ParamHints:  []string{"email"},
-			Roles:       []string{"admin"},
+			Permissions: "admin",
 			Priority:    10,
 			Handler:     handleCreateAccount,
 		},

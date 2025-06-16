@@ -20,7 +20,7 @@ func (p *WebhookSyncPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "webhook_sync",
 			Description: "Handles synchronization of webhooks from external sources",
 			ParamHints:  []string{"source"},
-			Roles:       []string{"integration"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleWebhookSync,
 		},

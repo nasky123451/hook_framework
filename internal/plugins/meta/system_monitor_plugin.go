@@ -19,7 +19,7 @@ func (p *SystemMonitorPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "system_monitor",
 			Description: "Handles system monitoring alerts",
 			ParamHints:  []string{"server"},
-			Roles:       []string{"devops"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleSystemMonitor,
 		},

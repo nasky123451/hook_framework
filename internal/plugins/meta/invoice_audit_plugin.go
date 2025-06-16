@@ -20,7 +20,7 @@ func (p *InvoiceAuditPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "create_invoice",
 			Description: "Handles invoice creation and audits the invoice details",
 			ParamHints:  []string{"invoice_no", "amount"},
-			Roles:       []string{"admin", "finance"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleCreateInvoice,
 		},

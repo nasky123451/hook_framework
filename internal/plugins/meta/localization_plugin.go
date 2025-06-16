@@ -20,7 +20,7 @@ func (p *LocalizationPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "set_language",
 			Description: "Handles setting the language for the user based on their preferences",
 			ParamHints:  []string{"language"},
-			Roles:       []string{"admin", "user"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleSetLanguage,
 		},

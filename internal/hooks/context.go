@@ -28,7 +28,7 @@ type HookMetadata struct {
 
 	Name        string   // Hook 的名稱
 	Description string   // Hook 的描述
-	Roles       []string // 可執行的角色列表（若為 nil 表示允許全部）
+	Permissions string   // 可執行的角色列表（若為 nil 表示允許全部）
 	ParamHints  []string // 參數提示（如類型、範例值等）
 	Plugin      string   // 所屬插件名稱
 }
@@ -161,7 +161,6 @@ func (c *HookContext) AddError(err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.Errors = append(c.Errors, err)
-	log.Printf("[HookContext] Error added: %v", err)
 }
 
 // Reset 清空錯誤列表，重置停止狀態及資料

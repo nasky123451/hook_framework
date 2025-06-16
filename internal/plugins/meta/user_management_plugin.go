@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"fmt"
 	"hook_framework/internal/hooks"
 )
 
@@ -19,21 +20,21 @@ func (p *UserManagementPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "create_user",
 			Description: "Creates a new user with a username and email",
 			ParamHints:  []string{"username", "email"},
-			Roles:       []string{"admin"},
+			Permissions: "admin",
 			Priority:    10,
 			Handler:     handleCreateUser,
 		},
 		{HookName: "update_user",
 			Description: "Updates a user's email address",
 			ParamHints:  []string{"username", "new_email"},
-			Roles:       []string{"admin"},
+			Permissions: "admin",
 			Priority:    10,
 			Handler:     handleUpdateUser,
 		},
 		{HookName: "delete_user",
 			Description: "Deletes a user by username",
 			ParamHints:  []string{"username"},
-			Roles:       []string{"admin"},
+			Permissions: "admin",
 			Priority:    10,
 			Handler:     handleDeleteUser,
 		},
@@ -46,6 +47,7 @@ func handleCreateUser(ctx *hooks.HookContext) hooks.HookResult {
 	username, _ := ctx.GetEnvString("username")
 	email, _ := ctx.GetEnvString("email")
 
+	fmt.Printf("User %s created with email %s", username, email)
 	// 實際的用戶創建邏輯可以在這裡實現
 	// 例如，將用戶信息存儲到數據庫中
 
@@ -56,6 +58,7 @@ func handleUpdateUser(ctx *hooks.HookContext) hooks.HookResult {
 	username, _ := ctx.GetEnvString("username")
 	newEmail, _ := ctx.GetEnvString("new_email")
 
+	fmt.Printf("User %s updated to new email %s", username, newEmail)
 	// 實際的用戶更新邏輯可以在這裡實現
 	// 例如，更新數據庫中的用戶電子郵件地址
 
@@ -64,8 +67,11 @@ func handleUpdateUser(ctx *hooks.HookContext) hooks.HookResult {
 
 func handleDeleteUser(ctx *hooks.HookContext) hooks.HookResult {
 	username, _ := ctx.GetEnvString("username")
+
+	fmt.Printf("User %s deleted successfully", username)
 	// 實際的用戶刪除邏輯可以在這裡實現
 	// 例如，從數據庫中刪除用戶
+
 	return ctx.SuccessWithMessage("User %s deleted successfully", username)
 }
 

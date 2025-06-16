@@ -49,9 +49,14 @@ func (g *HookGraph) executeRecursive(current string, ctx *HookContext, visited m
 	}
 	visited[current] = true
 
-	// 權限檢查（基於 ctx 的 role）
-	if !g.hm.CheckPermission(current, ctx) {
-		return fmt.Errorf("permission denied for hook %s and role %s", current, ctx.GetUserData("role"))
+	handlers := g.hm.GetHookDefinitionByName(current)
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	if !g.hm.CheckPermissions(ctx, handlers) {
+		role := ctx.GetUserData("permissions")
+		return fmt.Errorf("permission denied for hook %s and role %v", current, role)
 	}
 
 	result := g.hm.ExecuteHookByName(current, ctx)

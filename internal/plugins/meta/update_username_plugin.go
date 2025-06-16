@@ -19,7 +19,7 @@ func (p *UpdateUsernamePlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "update_username",
 			Description: "Handles updating a user's username",
 			ParamHints:  []string{"username"},
-			Roles:       []string{"admin"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleUpdateUsername,
 		},

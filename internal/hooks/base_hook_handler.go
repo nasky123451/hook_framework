@@ -7,8 +7,8 @@ type BaseHookHandler struct {
 	priority int
 	handler  HookHandlerFunc
 
-	roles    []string
-	metadata map[string]interface{}
+	permissions string
+	metadata    map[string]interface{}
 }
 
 // Name 回傳 hook 名稱
@@ -21,9 +21,8 @@ func (h *BaseHookHandler) Priority() int {
 	return h.priority
 }
 
-// Roles 回傳可執行的角色（若為 nil 表示允許全部）
-func (h *BaseHookHandler) Roles() []string {
-	return h.roles
+func (h *BaseHookHandler) Permissions() string {
+	return h.permissions
 }
 
 // Metadata 回傳自定義資訊
@@ -38,16 +37,7 @@ func (h *BaseHookHandler) Execute(ctx *HookContext) HookResult {
 
 // Filter 權限篩選（預設允許全部）
 func (h *BaseHookHandler) Filter(ctx *HookContext) bool {
-	if len(h.roles) == 0 {
-		return true // 沒有限制
-	}
-	userRole, _ := ctx.GetUserData("role").(string)
-	for _, role := range h.roles {
-		if role == userRole {
-			return true
-		}
-	}
-	return false
+	return true
 }
 
 // Run 執行 hook 並自動補 message

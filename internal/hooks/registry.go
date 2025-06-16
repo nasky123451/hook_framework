@@ -62,19 +62,19 @@ func RegisterHook(
 
 // dynamicHookHandler 是一個動態實現的 HookHandler，封裝了執行優先級與邏輯
 type dynamicHookHandler struct {
-	name     string
-	roles    []string
-	priority int
-	filter   func(ctx *HookContext) bool
-	run      func(ctx *HookContext) HookResult
+	name        string
+	permissions string
+	priority    int
+	filter      func(ctx *HookContext) bool
+	run         func(ctx *HookContext) HookResult
 }
 
 func (h *dynamicHookHandler) Name() string {
 	return h.name
 }
 
-func (h *dynamicHookHandler) Roles() []string {
-	return h.roles
+func (h *dynamicHookHandler) Roles() string {
+	return h.permissions
 }
 
 func (h *dynamicHookHandler) Priority() int {
@@ -94,6 +94,10 @@ func (h *dynamicHookHandler) Run(ctx *HookContext) HookResult {
 		return h.run(ctx)
 	}
 	return HookResult{}
+}
+
+func (h *dynamicHookHandler) Permissions() string {
+	return h.permissions // 預設動態 hook 無需權限檢查
 }
 
 // hookNameRegistry 用於管理所有已註冊的 Hook 名稱與其對應的標準化名稱

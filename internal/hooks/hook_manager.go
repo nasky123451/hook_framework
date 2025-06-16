@@ -12,19 +12,20 @@ import (
 )
 
 type HookManager struct {
-	mu        sync.RWMutex
-	hooks     map[string][]HookHandler
-	stats     map[string]*HookStats
-	statsVer  StatsVersion
-	pool      *ants.Pool
-	plugins   []Plugin
-	hookRoles map[string][]string
+	mu            sync.RWMutex
+	hooks         map[string][]HookHandler
+	stats         map[string]*HookStats
+	statsVer      StatsVersion
+	pool          *ants.Pool
+	plugins       []Plugin
+	hookRoles     map[string][]string
+	handlerToName map[HookHandler]string
 }
 
 type HookOptions struct {
-	Priority int
-	Roles    []string
-	Metadata map[string]interface{}
+	Priority    int
+	Permissions string
+	Metadata    map[string]interface{}
 }
 
 func NewHookManager() *HookManager {
@@ -82,11 +83,11 @@ func (hm *HookManager) RegisterHookWithOptions(name string, opt HookOptions, han
 	defer hm.mu.Unlock()
 
 	wrapped := &BaseHookHandler{
-		name:     name,
-		priority: opt.Priority,
-		handler:  handler,
-		roles:    opt.Roles,
-		metadata: opt.Metadata,
+		name:        name,
+		priority:    opt.Priority,
+		handler:     handler,
+		permissions: opt.Permissions,
+		metadata:    opt.Metadata,
 	}
 
 	// 短名註冊（去掉 Plugin 前綴）
@@ -116,23 +117,10 @@ func (hm *HookManager) GetRegisteredHooks() map[string][]string {
 	return result
 }
 
-// 簡單角色權限檢查範例 (可整合外部 IAM)
-func (hm *HookManager) CheckPermission(hookName string, ctx *HookContext) bool {
-	role := ctx.GetUserData("role")
-	hooks, ok := hm.hooks[hookName]
-	if !ok {
-		// 如果無明確設定，視為允許
-		return true
-	}
-	for _, h := range hooks {
-		for _, r := range h.Roles() {
-			if r == role {
-				return true
-			}
-		}
-	}
-	ctx.AddError(fmt.Errorf("permission denied: role '%v' cannot execute hook '%s'", role, hookName))
-	return false
+func (hm *HookManager) GetHookDefinitionByName(name string) []HookHandler {
+	hm.mu.RLock()
+	defer hm.mu.RUnlock()
+	return hm.hooks[name]
 }
 
 func (hm *HookManager) GenerateHookDocs(path string) error {
@@ -151,11 +139,9 @@ func (hm *HookManager) GenerateHookDocs(path string) error {
 			fmt.Sprintf("- 🔗 Registered From: %s", h.RegisteredFrom),
 		)
 
-		if len(h.Roles) > 0 {
+		if len(h.Permissions) > 0 {
 			lines = append(lines, "- 👥 Allowed Roles:")
-			for _, r := range h.Roles {
-				lines = append(lines, fmt.Sprintf("  - %s", r))
-			}
+			lines = append(lines, fmt.Sprintf("  - %s", h.Permissions))
 		}
 
 		if len(h.ParamHints) > 0 {
@@ -167,6 +153,12 @@ func (hm *HookManager) GenerateHookDocs(path string) error {
 
 		lines = append(lines, "") // spacing
 	}
+
+	lines = append(lines, "## 🔐 Permission Levels (from highest to lowest):")
+	for _, line := range GetFormattedRoleTree() {
+		lines = append(lines, line)
+	}
+	lines = append(lines, "")
 
 	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0644)
 }

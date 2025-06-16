@@ -5,6 +5,7 @@ import (
 	"hook_framework/internal/hooks"
 	"hook_framework/internal/plugins"
 	"hook_framework/internal/utils"
+	"log"
 )
 
 func InitializeFramework() *ClientInputProcessor {
@@ -22,6 +23,11 @@ func InitializeFramework() *ClientInputProcessor {
 	env.HookGraph.AddChain("create_account", "notify_account_created", "create_jira_task")
 
 	processor := NewClientInputProcessor(env, printer)
+
+	err := hooks.InitPermissions("./permissions.json")
+	if err != nil {
+		log.Fatalf("初始化權限失敗: %v", err)
+	}
 
 	if err := processor.Env.HookManager.GenerateHookDocs("hook_docs.md"); err != nil {
 		panic(fmt.Errorf("failed to generate hook docs: %w", err))

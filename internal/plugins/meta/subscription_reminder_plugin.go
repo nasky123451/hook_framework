@@ -19,7 +19,7 @@ func (p *SubscriptionReminderPlugin) RegisterHooks(hm *hooks.HookManager) {
 		{HookName: "subscription_reminder",
 			Description: "Handles sending subscription reminders to users",
 			ParamHints:  []string{"user_id"},
-			Roles:       []string{"subscriber"},
+			Permissions: "",
 			Priority:    10,
 			Handler:     handleSubscriptionReminder,
 		},
