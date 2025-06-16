@@ -41,7 +41,7 @@ func (p *ClientInputProcessor) Process(clientInput ClientInput) {
 
 	if p.Env.HookManager != nil {
 		if err := p.Env.HookManager.Execute(clientInput.Input, context, false); err != nil {
-			p.Printer.PrintError(fmt.Errorf("Hook execution error: %w", err))
+			p.Printer.PrintError(fmt.Errorf("hook execution error: %w", err))
 		}
 	}
 
