@@ -42,6 +42,7 @@ func (h *BaseHookHandler) Filter(ctx *HookContext) bool {
 
 // Run 執行 hook 並自動補 message
 func (h *BaseHookHandler) Run(ctx *HookContext) HookResult {
+	ctx.CurrentHandlerName = h.name
 	result := h.handler(ctx)
 	if result.Success {
 		if _, ok := ctx.GetEnvData("approval_message"); !ok {

@@ -10,14 +10,15 @@ import (
 // HookContext 定義執行 Hook 時的上下文結構
 // 分離 UserData 與 EnvData，並加入元數據、錯誤收集與停止控制
 type HookContext struct {
-	UserData     map[string]interface{} // 使用者相關資料（如角色、user_id 等）
-	EnvData      map[string]interface{} // 補充環境上下文（如 IP、裝置、語言等）
-	Metadata     HookMetadata           // 執行元資料（觸發來源、時間戳等）
-	Errors       []error                // 執行中產生的錯誤列表
-	Results      []interface{}          // 執行結果列表
-	StopSignal   bool                   // 是否停止後續 Hook 執行
-	mu           sync.RWMutex           // 併發保護
-	executionLog []HookResult           // 執行日誌，記錄每個 Hook 的執行結果
+	UserData           map[string]interface{} // 使用者相關資料（如角色、user_id 等）
+	EnvData            map[string]interface{} // 補充環境上下文（如 IP、裝置、語言等）
+	Metadata           HookMetadata           // 執行元資料（觸發來源、時間戳等）
+	Errors             []error                // 執行中產生的錯誤列表
+	Results            []interface{}          // 執行結果列表
+	StopSignal         bool                   // 是否停止後續 Hook 執行
+	mu                 sync.RWMutex           // 併發保護
+	executionLog       []HookResult           // 執行日誌，記錄每個 Hook 的執行結果
+	CurrentHandlerName string
 }
 
 // HookMetadata 用於描述 Hook 執行的額外元資訊

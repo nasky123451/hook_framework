@@ -92,6 +92,7 @@ func (b *HookBuilder) RegisterTo(hm *HookManager) {
 		Permissions: b.Permissions,
 		Metadata:    b.Metadata,
 	}, b.Handler)
+
 }
 
 func GetFormattedHookDescriptions() []string {

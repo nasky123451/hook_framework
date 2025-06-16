@@ -77,15 +77,15 @@ func (hm *HookManager) RegisterHook(name string, priority int, handler HookHandl
 	hm.hooks[name] = sorted
 }
 
-// RegisterHookWithOptions 更彈性的註冊方式
 func (hm *HookManager) RegisterHookWithOptions(name string, opt HookOptions, handler HookHandlerFunc) {
 	hm.mu.Lock()
 	defer hm.mu.Unlock()
 
+	// 建立 BaseHookHandler
 	wrapped := &BaseHookHandler{
 		name:        name,
 		priority:    opt.Priority,
-		handler:     handler,
+		handler:     handler, // 這裡使用 wrapped handler
 		permissions: opt.Permissions,
 		metadata:    opt.Metadata,
 	}
@@ -97,22 +97,22 @@ func (hm *HookManager) RegisterHookWithOptions(name string, opt HookOptions, han
 
 	hm.hooks[name] = append(hm.hooks[name], wrapped)
 
+	// 根據優先度排序
 	sort.Slice(hm.hooks[name], func(i, j int) bool {
 		return hm.hooks[name][i].Priority() < hm.hooks[name][j].Priority()
 	})
 }
 
 func (hm *HookManager) GetRegisteredHooks() map[string][]string {
+	result := make(map[string][]string)
 	hm.mu.RLock()
 	defer hm.mu.RUnlock()
-
-	result := make(map[string][]string)
-	for name, handlers := range hm.hooks {
-		var handlerNames []string
-		for _, h := range handlers {
-			handlerNames = append(handlerNames, h.Name())
+	for hookName, handlers := range hm.hooks {
+		names := make([]string, len(handlers))
+		for i, h := range handlers {
+			names[i] = h.Name()
 		}
-		result[name] = handlerNames
+		result[hookName] = names
 	}
 	return result
 }

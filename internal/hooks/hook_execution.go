@@ -7,23 +7,30 @@ import (
 )
 
 func (hm *HookManager) Execute(name string, ctx *HookContext, async bool) error {
-
 	handlers := hm.GetHookDefinitionByName(name)
 	if len(handlers) == 0 {
 		return nil
 	}
 
 	if !hm.CheckPermissions(ctx, handlers) {
-		role := ctx.GetUserData("permissions")
-		return fmt.Errorf("permission denied for hook %s and role %v", name, role)
+		permRaw := ctx.GetUserData("permissions")
+		perm, ok := permRaw.(string)
+		if !ok {
+			perm = ""
+		}
+		return fmt.Errorf("permission denied for hook %s and role %v", name, perm)
 	}
 
 	result := hm.ExecuteHookByName(name, ctx)
-	ctx.AddExecutionLog(result) // 紀錄流程與結果
+	ctx.AddExecutionLog(result)
 
 	if result.StopExecution {
 		fmt.Printf("[HookGraph] Hook %s 停止後續流程\n", name)
-		return nil
+	}
+
+	// *** 新增：如果有錯誤，回傳錯誤 ***
+	if result.Error != nil {
+		return result.Error
 	}
 
 	return nil
@@ -50,7 +57,8 @@ func (hm *HookManager) ExecuteHookByName(name string, ctx *HookContext) HookResu
 	})
 
 	var finalResult HookResult
-	finalResult.Permissions = ctx.EnvData["permissions"].(string)
+	perm, _ := ctx.EnvData["permissions"].(string)
+	finalResult.Permissions = perm
 	finalResult.Name = name
 	finalResult.Success = true
 
@@ -60,7 +68,8 @@ func (hm *HookManager) ExecuteHookByName(name string, ctx *HookContext) HookResu
 		if !handler.Filter(ctx) {
 			continue
 		}
-		result := handler.Run(ctx)
+		retryCfg := RetryConfig{MaxRetries: 3, Backoff: time.Millisecond * 100}
+		result := executeWithRetry(ctx, handler, retryCfg)
 		finalResult.Message = result.Message
 		if result.Error != nil {
 			finalResult.Success = false

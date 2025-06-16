@@ -19,6 +19,7 @@ type HookResult struct {
 	Error         error
 	Message       string
 	DateTime      time.Time
+	Retryable     bool
 }
 
 type HookHandlerFunc func(ctx *HookContext) HookResult
